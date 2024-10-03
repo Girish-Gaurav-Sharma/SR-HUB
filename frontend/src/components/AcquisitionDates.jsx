@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const AcquisitionDates = ({ latitude, longitude }) => {
 	const [dates, setDates] = useState([]);
 	const [error, setError] = useState(null);
@@ -12,7 +12,7 @@ const AcquisitionDates = ({ latitude, longitude }) => {
 		console.log('Fetching acquisition dates...');
 		axios
 			.get(
-				`https://sr-hub-backend.onrender.com//get-acquisition-dates?longitude=${longitude}&latitude=${latitude}`
+				`${API_URL}/get-acquisition-dates?longitude=${longitude}&latitude=${latitude}`
 			)
 			.then(response => {
 				console.log('Response received:', response); // Log the response

@@ -1,0 +1,53 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Customize Leaflet's zoom controls using Tailwind */
+/* Ensure there's no default Leaflet styling affecting the zoom control */
+.leaflet-control-zoom {
+	display: flex !important;
+	flex-direction: column !important;
+	justify-content: center !important;
+	align-items: center !important;
+	gap: 10px;
+	background: none !important; /* Ensures background is completely transparent */
+	border: none !important; /* Ensures no border is shown */
+	box-shadow: none !important; /* Ensures no shadow is applied */
+	padding: 0 !important; /* Remove any padding */
+	margin-bottom: 30px !important; /* Remove any margin */
+	margin-right: 40px !important; /* Remove any margin */
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	cursor: pointer !important;
+	height: 45px !important;
+	width: 45px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	border-radius: 1.5rem !important;
+	border: none !important; /* Ensures no border around buttons */
+	outline: none !important; /* Prevents focus outlines from appearing */
+	background-color: rgba(
+		255,
+		255,
+		255,
+		0.3
+	) !important; /* Light transparent background */
+	backdrop-filter: blur(10px) !important; /* Apply blur effect */
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important; /* Shadow effect */
+	transition: background-color 0.3s ease, transform 0.2s ease !important; /* Smooth transition for hover effect */
+}
+
+/* Remove unwanted background or styles on hover */
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+	background-color: rgba(
+		255,
+		255,
+		255,
+		0.5
+	) !important; /* Darker background on hover */
+	transform: scale(1.2) !important;
+}

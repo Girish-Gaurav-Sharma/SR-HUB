@@ -12,7 +12,7 @@ const AcquisitionDates = ({ latitude, longitude }) => {
 		console.log('Fetching acquisition dates...');
 		axios
 			.get(
-				`http://localhost:3000/get-acquisition-dates?longitude=${longitude}&latitude=${latitude}`
+				`https://sr-hub-backend.onrender.com//get-acquisition-dates?longitude=${longitude}&latitude=${latitude}`
 			)
 			.then(response => {
 				console.log('Response received:', response); // Log the response

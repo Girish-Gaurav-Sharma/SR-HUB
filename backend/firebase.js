@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
-const serviceAccount = require('./JSON/sr-data-comparision-firebase-adminsdk-hvic2-5af68d1de9firebase.json'); // Firebase Service Account
+const serviceAccount = JSON.parse(process.env.FIREBASE_KEY); // Firebase Service Account
+// const serviceAccount = require('./JSON/sr-data-comparision-firebase-adminsdk-hvic2-5af68d1de9firebase.json'); // Firebase Service Account
 
 // Initialize Firebase Admin SDK
 admin.initializeApp({

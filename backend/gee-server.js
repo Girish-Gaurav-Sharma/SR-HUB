@@ -1,7 +1,6 @@
 // Import required modules
 require('dotenv').config();
 const ee = require('@google/earthengine');
-// const key = process.env.SR_DATA_COMPARISON_PRIVATE_KEY;
 // const geejson = require('./JSON/sr-data-comparison-1b68f9eda759.json');
 // Initialize Earth Engine with your service account
 const initializeEE = () => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+// const API_URL = 'http://localhost:3000';
+const API_URL = 'https://sr-hub-backend.onrender.com';
 const AcquisitionDates = ({ latitude, longitude }) => {
 	const [dates, setDates] = useState([]);
 	const [error, setError] = useState(null);

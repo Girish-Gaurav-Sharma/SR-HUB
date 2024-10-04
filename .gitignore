@@ -28,6 +28,5 @@ backend/JSON/
 backend/node_modules/
 backend/.env
 backend/emailNotification.js
-backend/firebase.js
 backend/whatsappNotification.js
 frontend/node_modules/

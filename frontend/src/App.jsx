@@ -143,6 +143,14 @@ const App = () => {
 								Date
 							</button>
 						</div>
+						<button
+							className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+							onClick={() => {
+								setShowOlderNavBar(true);
+								setShowCanvas(false);
+							}}>
+							Change Location
+						</button>
 					</nav>
 					<div
 						className="absolute z-30 backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto h-[calc(100vh-7rem)] mt-8 rounded-3xl w-[calc(100vw-6rem)]  shadow-xl transition-all duration-300"

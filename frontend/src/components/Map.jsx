@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+import L from 'leaflet'; // Add this import to configure leaflet marker
 import {
 	MapContainer,
 	TileLayer,
@@ -8,6 +9,21 @@ import {
 	useMapEvents,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+
+// Import the marker icon images from Leaflet package
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Fix the marker icon not showing after deployment
+const defaultIcon = L.icon({
+	iconUrl: markerIcon,
+	shadowUrl: markerShadow,
+	iconSize: [25, 41], // Size of the icon
+	iconAnchor: [12, 41], // Point where the icon is anchored
+	popupAnchor: [1, -34], // Point where the popup should open
+	shadowSize: [41, 41], // Size of the shadow
+});
+L.Marker.prototype.options.icon = defaultIcon;
 
 const MapContent = ({
 	center,

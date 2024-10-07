@@ -9,6 +9,12 @@ import axios from 'axios';
 
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);
+	const [showOlderNavBar, setShowOlderNavBar] = useState(true);
+	const [showCanvas, setShowCanvas] = useState(false);
+	const [showAcquisitionDates, setShowAcquisitionDates] = useState(false);
+	const [showThreeMonthCalendar, setShowThreeMonthCalendar] = useState(false);
+	const [showDate, setShowDate] = useState(false);
+
 	const [center, setCenter] = useState([51.505, -0.09]);
 	const [zoom, setZoom] = useState(2);
 	const [selectedLocation, setSelectedLocation] = useState(null);
@@ -17,9 +23,8 @@ const App = () => {
 		lat: '51.505',
 		lng: '-0.09',
 	});
+
 	const mapRef = useRef();
-	const [showOlderNavBar, setShowOlderNavBar] = useState(true);
-	const [showCanvas, setShowCanvas] = useState(false);
 
 	const handleCoordinatesChange = useCallback(() => {
 		if (mapRef.current) {
@@ -32,8 +37,6 @@ const App = () => {
 	useEffect(() => {
 		handleCoordinatesChange();
 	}, [handleCoordinatesChange]);
-
-	console.log('isUserTyping:', isUserTyping);
 
 	const handleUserTyping = useCallback(isTyping => {
 		setIsUserTyping(isTyping);
@@ -103,25 +106,52 @@ const App = () => {
 
 			{showCanvas && (
 				<div
-					className="absolute inset-0 z-30 backdrop-blur-sm flex items-center justify-center overflow-auto"
+					className="absolute inset-0 z-30 backdrop-blur-md flex items-center justify-center overflow-auto"
 					style={{ maxHeight: '100vh' }}>
-					<div className="flex flex-col">
-						<nav className="absolute inset-x-0 top-0 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-							<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
-						</nav>
-						{/* <nav className="absolute inset-x-0 top-10 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-							<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
-						</nav> */}
+					<nav className="absolute inset-x-0 top-0 z-40 backdrop-blur-md bg-white/40 text-black flex items-center justify-between p-4 h-16 shadow-lg rounded-full mt-4 mx-6">
+						<h1 className="text-2xl ml-4 font-bold tracking-wide">
+							SR-HUB
+						</h1>
+						<div className="flex items-center gap-x-4">
+							<button
+								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+								onClick={() =>
+									setShowAcquisitionDates(
+										!showAcquisitionDates
+									)
+								}>
+								Acquisition Dates
+							</button>
+							<button
+								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+								onClick={() =>
+									setShowThreeMonthCalendar(
+										!showThreeMonthCalendar
+									)
+								}>
+								Satellite Calendar
+							</button>
+							<button
+								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+								onClick={() => setShowDate(!showDate)}>
+								Date
+							</button>
+						</div>
+					</nav>
+					<div
+						className="absolute z-30 backdrop-blur-md bg-black/70 p-6 mt-20 mx-4 rounded-3xl w-full max-w-4xl shadow-xl transition-all duration-300"
+						style={{ top: '4rem' }}>
+						{/* {showAcquisitionDates && (
+							<AcquisitionDates
+								latitude={coordinates.lat}
+								longitude={coordinates.lng}
+							/>
+						)} */}
+						{/* {showThreeMonthCalendar && <ThreeMonthCalendar />} */}
+						{/* {showDate && <Date />} */}
 					</div>
-					{/* <AcquisitionDates
-						latitude={coordinates.lat}
-						longitude={coordinates.lng}
-					/>
-					<ThreeMonthCalendar />
-					<Date /> */}
 				</div>
 			)}
-
 			<div className="flex-grow relative z-10">
 				<Map
 					center={center}

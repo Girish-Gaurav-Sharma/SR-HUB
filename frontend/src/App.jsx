@@ -4,7 +4,7 @@ import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
 import axios from 'axios';
 import AcquisitionDates from './components/AcquisitionDates';
-import ThreeMonthCalendar from './components/Calanderview';
+// import ThreeMonthCalendar from './components/Calanderview';
 import Date from './components/Date';
 
 const App = () => {
@@ -105,9 +105,14 @@ const App = () => {
 				<div
 					className="absolute inset-0 z-30 backdrop-blur-sm flex items-center justify-center overflow-auto"
 					style={{ maxHeight: '100vh' }}>
-					<nav className="absolute inset-x-0 top-0 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-						<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
-					</nav>
+					<div className="flex flex-col">
+						<nav className="absolute inset-x-0 top-0 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
+							<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
+						</nav>
+						<nav className="absolute inset-x-0 top-10 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
+							<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
+						</nav>
+					</div>
 					{/* <AcquisitionDates
 						latitude={coordinates.lat}
 						longitude={coordinates.lng}

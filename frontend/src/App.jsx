@@ -4,8 +4,11 @@ import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
 import axios from 'axios';
 import AcquisitionDates from './components/AcquisitionDates';
+import ThreeMonthCalendar from './components/Calanderview';
+import Date from './components/Date';
 
 const App = () => {
+	const [isUserTyping, setIsUserTyping] = useState(false);
 	const [center, setCenter] = useState([51.505, -0.09]);
 	const [zoom, setZoom] = useState(2);
 	const [selectedLocation, setSelectedLocation] = useState(null);
@@ -15,26 +18,28 @@ const App = () => {
 		lng: '-0.09',
 	});
 	const [hasAutocentered, setHasAutocentered] = useState(false);
+	const [showOlderNavBar, setShowOlderNavBar] = useState(false);
 	const mapRef = useRef();
 
+	console.log('isUserTyping:', isUserTyping);
+
+	const handleUserTyping = useCallback(isTyping => {
+		setIsUserTyping(isTyping);
+	}, []);
+
 	const handleLocationChange = useCallback(
-		async (coordinates, displayName, shouldAutocenter = true) => {
+		async (coordinates, displayName) => {
 			const newZoom = calculateZoomLevel(coordinates);
 
 			setSelectedLocation({ coordinates, displayName });
 
-			if (shouldAutocenter && !hasAutocentered) {
-				setCenter(coordinates);
-				mapRef.current.flyTo(coordinates, newZoom, { duration: 1 });
-				setHasAutocentered(true);
-			}
-
 			setCoordinates({
+				/* Resetting latitude and longitude here */
 				lat: coordinates[0].toFixed(6),
 				lng: coordinates[1].toFixed(6),
 			});
 
-			if (!displayName) {
+			if (!displayName && !isUserTyping) {
 				try {
 					const response = await axios.get(
 						`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coordinates[0]}&lon=${coordinates[1]}`
@@ -48,7 +53,7 @@ const App = () => {
 				setSearchQuery(displayName);
 			}
 		},
-		[hasAutocentered]
+		[isUserTyping]
 	);
 
 	const calculateZoomLevel = coordinates => {
@@ -62,47 +67,63 @@ const App = () => {
 		return 6;
 	};
 
+	/*************  ✨ Codeium Command 🌟  *************/
 	const handleZoomChange = newZoom => {
+		/* Zoom level is being updated here */
 		setZoom(newZoom);
+		setZoom(newZoom); // Don't update center on zoom change
 	};
+	/******  88b208db-1688-46de-9d02-eabecf9315a3  *******/
 
 	const handleCenterOnPin = () => {
 		if (selectedLocation) {
-			const newZoom = calculateZoomLevel(selectedLocation.coordinates);
 			setCenter(selectedLocation.coordinates);
-			mapRef.current.flyTo(selectedLocation.coordinates, newZoom, {
-				duration: 1,
-			});
 		}
 	};
+
 	console.log(coordinates);
+
 	return (
 		<div className="relative flex flex-col h-screen">
 			<div className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-				<h1 className="text-2xl font-bold">Interactive Map</h1>
-				{/* <Search
-					onLocationSelected={handleLocationChange}
-					searchQuery={searchQuery}
-					setSearchQuery={setSearchQuery}
-				/> */}
-				{/* <CoordinateInput
-					onCoordinatesChanged={handleLocationChange}
-					coordinates={coordinates}
-					setCoordinates={setCoordinates}
-				/> */}
+				<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
+				<div className="flex items-center gap-x-4">
+					<Search
+						onLocationSelected={handleLocationChange}
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+						onUserTyping={handleUserTyping}
+					/>
+					<CoordinateInput
+						onCoordinatesChanged={handleLocationChange}
+						coordinates={coordinates}
+						setCoordinates={setCoordinates}
+					/>
+				</div>
 				<button
-					onClick={handleCenterOnPin}
-					className="ml-2 p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
-					disabled={!selectedLocation}>
-					Center on Pin
+					className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+					onClick={() => setShowOlderNavBar(!showOlderNavBar)}>
+					{showOlderNavBar
+						? 'Lock This Location'
+						: 'Lock This Location'}
 				</button>
 			</div>
+			{showOlderNavBar && (
+				<div className="absolute inset-x-0 top-16 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
+					<button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+						Dummy Button 1
+					</button>
+					<button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+						Dummy Button 2
+					</button>
+				</div>
+			)}
 
 			<div className="flex-grow relative z-10">
-				<AcquisitionDates
+				{/* <AcquisitionDates
 					latitude={coordinates.lat}
 					longitude={coordinates.lng}
-				/>
+				/> */}
 				<Map
 					center={center}
 					zoom={zoom}
@@ -112,6 +133,8 @@ const App = () => {
 					onZoomChange={handleZoomChange}
 				/>
 			</div>
+			{/* <ThreeMonthCalendar /> */}
+			{/* <Date /> */}
 		</div>
 	);
 };

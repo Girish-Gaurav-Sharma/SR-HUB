@@ -25,13 +25,17 @@ const CoordinateInput = ({
 
 	return (
 		<div className="flex space-x-2">
+			<div className="flex items-center text-lg font-semibold text-gray-800">
+				Coordinates
+			</div>
+
 			<input
 				type="number"
 				name="lat"
 				value={coordinates.lat}
 				onChange={handleChange}
 				placeholder="Latitude"
-				className="p-2 border rounded w-24"
+				className="pl-4 pr-4 border border-gray-300 rounded-3xl w-32 h-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
 			/>
 			<input
 				type="number"
@@ -39,7 +43,7 @@ const CoordinateInput = ({
 				value={coordinates.lng}
 				onChange={handleChange}
 				placeholder="Longitude"
-				className="p-2 border rounded w-24"
+				className="pl-4 pr-4 border border-gray-300 rounded-3xl w-32 h-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
 			/>
 		</div>
 	);

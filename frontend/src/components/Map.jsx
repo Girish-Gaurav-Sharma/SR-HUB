@@ -11,7 +11,6 @@ import 'leaflet/dist/leaflet.css';
 
 const MapContent = ({
 	center,
-	zoom,
 	selectedLocation,
 	onLocationChange,
 	onZoomChange,
@@ -19,9 +18,9 @@ const MapContent = ({
 	const map = useMap();
 
 	useEffect(() => {
-		map.setView(center, zoom);
+		map.setView(center);
 		map.zoomControl.setPosition('bottomright');
-	}, [center, zoom, map]);
+	}, [center, map]);
 
 	const handleClick = useCallback(
 		e => {
@@ -76,7 +75,12 @@ const Map = React.forwardRef(
 					[90, 180],
 				]}
 				maxBoundsViscosity={1.0}
-				worldCopyJump={true}>
+				worldCopyJump={true}
+				scrollWheelZoom={true} // Enable smooth zoom based on cursor position
+				zoomSnap={0.25} // Adjust the zoom snapping to make zoom smoother
+				zoomDelta={0.5} // Smaller steps for zoom to give smoother experience
+				wheelPxPerZoomLevel={120} // Control zoom based on scroll wheel intensity
+			>
 				<MapContent
 					center={center}
 					zoom={zoom}

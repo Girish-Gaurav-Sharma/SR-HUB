@@ -96,7 +96,7 @@ const App = () => {
 							setShowOlderNavBar(!showOlderNavBar);
 							setShowCanvas(!showCanvas);
 						}}>
-						Hide
+						Lock This Location
 					</button>
 				</nav>
 			)}

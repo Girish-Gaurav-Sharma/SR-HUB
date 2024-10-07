@@ -3,9 +3,9 @@ import Map from './components/Map';
 import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
 import axios from 'axios';
-// import AcquisitionDates from './components/AcquisitionDates';
-// import ThreeMonthCalendar from './components/Calanderview';
-// import Date from './components/Date';
+import AcquisitionDates from './components/AcquisitionDates';
+import ThreeMonthCalendar from './components/Calanderview';
+import Date from './components/Date';
 
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);
@@ -17,9 +17,9 @@ const App = () => {
 		lat: '51.505',
 		lng: '-0.09',
 	});
-	const [hasAutocentered, setHasAutocentered] = useState(false);
-	const [showOlderNavBar, setShowOlderNavBar] = useState(false);
 	const mapRef = useRef();
+	const [showOlderNavBar, setShowOlderNavBar] = useState(true);
+	const [showCanvas, setShowCanvas] = useState(false);
 
 	const handleCoordinatesChange = useCallback(() => {
 		if (mapRef.current) {
@@ -66,63 +66,58 @@ const App = () => {
 		[isUserTyping]
 	);
 
-	/*************  ✨ Codeium Command 🌟  *************/
 	const handleZoomChange = newZoom => {
-		/* Zoom level is being updated here */
 		setZoom(newZoom);
-		setZoom(newZoom); // Don't update center on zoom change
-	};
-	/******  88b208db-1688-46de-9d02-eabecf9315a3  *******/
-
-	const handleCenterOnPin = () => {
-		if (selectedLocation) {
-			setCenter(selectedLocation.coordinates);
-		}
 	};
 
 	console.log(coordinates);
 
 	return (
 		<div className="relative flex flex-col h-screen">
-			<div className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-				<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
-				<div className="flex items-center gap-x-4">
-					<Search
-						onLocationSelected={handleLocationChange}
-						searchQuery={searchQuery}
-						setSearchQuery={setSearchQuery}
-						onUserTyping={handleUserTyping}
-					/>
-					<CoordinateInput
-						onCoordinatesChanged={handleLocationChange}
-						coordinates={coordinates}
-						setCoordinates={setCoordinates}
-					/>
-				</div>
-				<button
-					className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-					onClick={() => setShowOlderNavBar(!showOlderNavBar)}>
-					{showOlderNavBar
-						? 'Lock This Location'
-						: 'Lock This Location'}
-				</button>
-			</div>
 			{showOlderNavBar && (
-				<div className="absolute inset-x-0 top-16 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-					<button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-						Dummy Button 1
+				<nav className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
+					<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
+					<div className="flex items-center gap-x-4">
+						<Search
+							onLocationSelected={handleLocationChange}
+							searchQuery={searchQuery}
+							setSearchQuery={setSearchQuery}
+							onUserTyping={handleUserTyping}
+						/>
+						<CoordinateInput
+							onCoordinatesChanged={handleLocationChange}
+							coordinates={coordinates}
+							setCoordinates={setCoordinates}
+						/>
+					</div>
+					<button
+						className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+						onClick={() => {
+							setShowOlderNavBar(!showOlderNavBar);
+							setShowCanvas(!showCanvas);
+						}}>
+						Hide
 					</button>
-					<button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-						Dummy Button 2
-					</button>
+				</nav>
+			)}
+
+			{showCanvas && (
+				<div
+					className="absolute inset-0 z-30 backdrop-blur-sm flex items-center justify-center overflow-auto"
+					style={{ maxHeight: '100vh' }}>
+					<nav className="absolute inset-x-0 top-0 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
+						<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
+					</nav>
+					{/* <AcquisitionDates
+						latitude={coordinates.lat}
+						longitude={coordinates.lng}
+					/>
+					<ThreeMonthCalendar />
+					<Date /> */}
 				</div>
 			)}
 
 			<div className="flex-grow relative z-10">
-				{/* <AcquisitionDates
-					latitude={coordinates.lat}
-					longitude={coordinates.lng}
-				/> */}
 				<Map
 					center={center}
 					zoom={zoom}
@@ -132,8 +127,6 @@ const App = () => {
 					onZoomChange={handleZoomChange}
 				/>
 			</div>
-			{/* <ThreeMonthCalendar /> */}
-			{/* <Date /> */}
 		</div>
 	);
 };

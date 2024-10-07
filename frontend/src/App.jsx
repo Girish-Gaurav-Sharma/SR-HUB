@@ -114,7 +114,7 @@ const App = () => {
 							SR-HUB
 						</h1>
 						<div className="flex items-center gap-x-4">
-							<button
+							{/* <button
 								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
 									activeTab === 'AcquisitionDates'
 										? 'bg-blue-700'
@@ -124,7 +124,7 @@ const App = () => {
 									setActiveTab('AcquisitionDates')
 								}>
 								Acquisition Dates
-							</button>
+							</button> */}
 							<button
 								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
 									activeTab === 'SatelliteCalendar'
@@ -141,7 +141,7 @@ const App = () => {
 									activeTab === 'Date' ? 'bg-blue-700' : ''
 								}`}
 								onClick={() => setActiveTab('Date')}>
-								Date
+								Data
 							</button>
 						</div>
 						<button

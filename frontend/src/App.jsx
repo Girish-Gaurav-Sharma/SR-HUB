@@ -3,17 +3,17 @@ import Map from './components/Map';
 import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
 import axios from 'axios';
+import 'antd/dist/reset.css'; // Ant Design styles
+
 // import AcquisitionDates from './components/AcquisitionDates';
-// import ThreeMonthCalendar from './components/Calanderview';
+import ThreeMonthCalendar from './components/Calanderview';
 // import Date from './components/Date';
 
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);
 	const [showOlderNavBar, setShowOlderNavBar] = useState(true);
 	const [showCanvas, setShowCanvas] = useState(false);
-	const [showAcquisitionDates, setShowAcquisitionDates] = useState(false);
-	const [showThreeMonthCalendar, setShowThreeMonthCalendar] = useState(false);
-	const [showDate, setShowDate] = useState(false);
+	const [activeTab, setActiveTab] = useState('AcquisitionDates');
 
 	const [center, setCenter] = useState([51.505, -0.09]);
 	const [zoom, setZoom] = useState(2);
@@ -114,41 +114,49 @@ const App = () => {
 						</h1>
 						<div className="flex items-center gap-x-4">
 							<button
-								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+									activeTab === 'AcquisitionDates'
+										? 'bg-blue-700'
+										: ''
+								}`}
 								onClick={() =>
-									setShowAcquisitionDates(
-										!showAcquisitionDates
-									)
+									setActiveTab('AcquisitionDates')
 								}>
 								Acquisition Dates
 							</button>
 							<button
-								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+									activeTab === 'SatelliteCalendar'
+										? 'bg-blue-700'
+										: ''
+								}`}
 								onClick={() =>
-									setShowThreeMonthCalendar(
-										!showThreeMonthCalendar
-									)
+									setActiveTab('SatelliteCalendar')
 								}>
 								Satellite Calendar
 							</button>
 							<button
-								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
-								onClick={() => setShowDate(!showDate)}>
+								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+									activeTab === 'Date' ? 'bg-blue-700' : ''
+								}`}
+								onClick={() => setActiveTab('Date')}>
 								Date
 							</button>
 						</div>
 					</nav>
 					<div
-						className="absolute z-30 backdrop-blur-md bg-black/70 p-6 mt-20 mx-4 rounded-3xl w-full max-w-4xl shadow-xl transition-all duration-300"
+						className="absolute z-30 backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto h-[calc(100vh-7rem)] mt-8 rounded-3xl w-[calc(100vw-6rem)]  shadow-xl transition-all duration-300"
 						style={{ top: '4rem' }}>
-						{/* {showAcquisitionDates && (
+						{/* {activeTab === 'AcquisitionDates' && (
 							<AcquisitionDates
 								latitude={coordinates.lat}
 								longitude={coordinates.lng}
 							/>
 						)} */}
-						{/* {showThreeMonthCalendar && <ThreeMonthCalendar />} */}
-						{/* {showDate && <Date />} */}
+						{activeTab === 'SatelliteCalendar' && (
+							<ThreeMonthCalendar />
+						)}
+						{/* {activeTab === 'Date' && <Date />} */}
 					</div>
 				</div>
 			)}

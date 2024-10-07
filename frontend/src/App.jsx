@@ -98,6 +98,7 @@ const App = () => {
 						onClick={() => {
 							setShowOlderNavBar(!showOlderNavBar);
 							setShowCanvas(!showCanvas);
+							setActiveTab('SatelliteCalendar');
 						}}>
 						Lock This Location
 					</button>
@@ -133,7 +134,7 @@ const App = () => {
 								onClick={() =>
 									setActiveTab('SatelliteCalendar')
 								}>
-								Satellite Calendar
+								Overpass Calendar
 							</button>
 							<button
 								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${

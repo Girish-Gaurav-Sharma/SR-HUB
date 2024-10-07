@@ -1,26 +1,25 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 const CoordinateInput = ({
 	onCoordinatesChanged,
 	coordinates,
 	setCoordinates,
 }) => {
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			if (coordinates.lat && coordinates.lng) {
-				onCoordinatesChanged([
-					parseFloat(coordinates.lat),
-					parseFloat(coordinates.lng),
-				]);
-			}
-		}, 1000); // 1 second delay
-
-		return () => clearTimeout(timer);
-	}, [coordinates, onCoordinatesChanged]);
-
 	const handleChange = e => {
 		const { name, value } = e.target;
-		setCoordinates(prev => ({ ...prev, [name]: value }));
+		const newCoordinates = {
+			...coordinates,
+			[name]: value,
+		};
+
+		setCoordinates(newCoordinates);
+
+		if (newCoordinates.lat && newCoordinates.lng) {
+			onCoordinatesChanged([
+				parseFloat(newCoordinates.lat),
+				parseFloat(newCoordinates.lng),
+			]);
+		}
 	};
 
 	return (

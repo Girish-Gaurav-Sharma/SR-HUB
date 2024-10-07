@@ -67,10 +67,10 @@ const MapContent = ({
 				<Marker position={selectedLocation.coordinates}>
 					<Popup className="w-auto h-auto">
 						Latitude:
-						{selectedLocation.coordinates[0].toFixed(6)}
+						{selectedLocation.coordinates[0].toFixed(3)}
 						<br />
 						Longitude:
-						{selectedLocation.coordinates[1].toFixed(6)}
+						{selectedLocation.coordinates[1].toFixed(3)}
 					</Popup>
 				</Marker>
 			)}

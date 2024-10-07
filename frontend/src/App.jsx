@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Map from './components/Map';
 import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
@@ -21,6 +21,18 @@ const App = () => {
 	const [showOlderNavBar, setShowOlderNavBar] = useState(false);
 	const mapRef = useRef();
 
+	const handleCoordinatesChange = useCallback(() => {
+		if (mapRef.current) {
+			mapRef.current.flyTo([coordinates.lat, coordinates.lng], 8, {
+				animate: true,
+			});
+		}
+	}, [coordinates, mapRef]);
+
+	useEffect(() => {
+		handleCoordinatesChange();
+	}, [handleCoordinatesChange]);
+
 	console.log('isUserTyping:', isUserTyping);
 
 	const handleUserTyping = useCallback(isTyping => {
@@ -29,8 +41,6 @@ const App = () => {
 
 	const handleLocationChange = useCallback(
 		async (coordinates, displayName) => {
-			const newZoom = calculateZoomLevel(coordinates);
-
 			setSelectedLocation({ coordinates, displayName });
 
 			setCoordinates({
@@ -55,17 +65,6 @@ const App = () => {
 		},
 		[isUserTyping]
 	);
-
-	const calculateZoomLevel = coordinates => {
-		const [lat, lon] = coordinates;
-		const latAbs = Math.abs(lat);
-		const lonAbs = Math.abs(lon);
-
-		if (latAbs < 0.01 && lonAbs < 0.01) return 18;
-		if (latAbs < 0.1 && lonAbs < 0.1) return 15;
-		if (latAbs < 1 && lonAbs < 1) return 10;
-		return 6;
-	};
 
 	/*************  ✨ Codeium Command 🌟  *************/
 	const handleZoomChange = newZoom => {

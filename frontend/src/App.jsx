@@ -3,9 +3,9 @@ import Map from './components/Map';
 import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
 import axios from 'axios';
-import AcquisitionDates from './components/AcquisitionDates';
-import ThreeMonthCalendar from './components/Calanderview';
-import Date from './components/Date';
+// import AcquisitionDates from './components/AcquisitionDates';
+// import ThreeMonthCalendar from './components/Calanderview';
+// import Date from './components/Date';
 
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);

@@ -109,9 +109,9 @@ const App = () => {
 						<nav className="absolute inset-x-0 top-0 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
 							<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
 						</nav>
-						<nav className="absolute inset-x-0 top-10 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
+						{/* <nav className="absolute inset-x-0 top-10 z-30 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
 							<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
-						</nav>
+						</nav> */}
 					</div>
 					{/* <AcquisitionDates
 						latitude={coordinates.lat}

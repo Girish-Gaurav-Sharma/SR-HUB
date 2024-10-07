@@ -7,7 +7,7 @@ import 'antd/dist/reset.css'; // Ant Design styles
 
 // import AcquisitionDates from './components/AcquisitionDates';
 import ThreeMonthCalendar from './components/Calanderview';
-// import Date from './components/Date';
+import Date from './components/Date';
 
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);
@@ -165,7 +165,7 @@ const App = () => {
 						{activeTab === 'SatelliteCalendar' && (
 							<ThreeMonthCalendar />
 						)}
-						{/* {activeTab === 'Date' && <Date />} */}
+						{activeTab === 'Date' && <Date />}
 					</div>
 				</div>
 			)}

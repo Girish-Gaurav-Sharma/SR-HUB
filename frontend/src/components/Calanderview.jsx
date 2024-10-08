@@ -2,8 +2,8 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// const API_URL = 'http://localhost:3000';
-const API_URL = 'https://sr-hub-backend.onrender.com';
+const API_URL = 'http://localhost:3000';
+// const API_URL = 'https://sr-hub-backend.onrender.com';
 
 const ThreeMonthCalendar = ({ latitude, longitude }) => {
 	const [dates, setDates] = useState([]);
@@ -115,9 +115,15 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 				<div className="text-xl font-bold text-blue-600 flex flex-col items-center">
 					<p>Building Satellite Overpass Calendar...</p>
 					<p className="mt-4">
-						Wait for: <span className="text-3xl">{countdown}</span>{' '}
+						Countdown: <span className="text-3xl">{countdown}</span>{' '}
 						seconds
 					</p>
+				</div>
+			) : dates.length === 0 ? (
+				// Show error message if no data is available after countdown
+				<div className="text-xl font-bold text-red-600 flex flex-col items-center">
+					<p>No data available for the selected location.</p>
+					<p>Please try changing the location. Or try again later</p>
 				</div>
 			) : (
 				<>

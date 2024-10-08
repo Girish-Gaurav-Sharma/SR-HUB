@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { db } from '../firebaseConfig';
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+// import { db } from '../firebaseConfig';
+// import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 
@@ -66,43 +66,39 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 	} = useForm();
 
 	const onSubmit = async data => {
-		const fullMobileNumber = data.mobile;
-
-		// Check if the mobile number already exists
-		const q = query(
-			collection(db, 'users'),
-			where('mobile', '==', fullMobileNumber)
-		);
-		const querySnapshot = await getDocs(q);
-
-		if (!querySnapshot.empty) {
-			setError('mobile', {
-				type: 'manual',
-				message: 'This mobile number is already registered.',
-			});
-			return;
-		}
-
-		try {
-			await addDoc(collection(db, 'users'), {
-				name: data.name,
-				email: data.email,
-				mobile: fullMobileNumber,
-				lt: lat,
-				ln: long,
-				leadTimeDays: data.leadTimeDays,
-				leadTimeHours: data.leadTimeHours,
-			});
-			console.log('Document successfully written!');
-
-			reset();
-		} catch (error) {
-			console.error('Error adding document: ', error);
-			setError('submit', {
-				type: 'manual',
-				message: 'Error adding user. Please try again.',
-			});
-		}
+		// const fullMobileNumber = data.mobile;
+		// // Check if the mobile number already exists
+		// const q = query(
+		// 	collection(db, 'users'),
+		// 	where('mobile', '==', fullMobileNumber)
+		// );
+		// const querySnapshot = await getDocs(q);
+		// if (!querySnapshot.empty) {
+		// 	setError('mobile', {
+		// 		type: 'manual',
+		// 		message: 'This mobile number is already registered.',
+		// 	});
+		// 	return;
+		// }
+		// try {
+		// 	await addDoc(collection(db, 'users'), {
+		// 		name: data.name,
+		// 		email: data.email,
+		// 		mobile: fullMobileNumber,
+		// 		lt: lat,
+		// 		ln: long,
+		// 		leadTimeDays: data.leadTimeDays,
+		// 		leadTimeHours: data.leadTimeHours,
+		// 	});
+		// 	console.log('Document successfully written!');
+		// 	reset();
+		// } catch (error) {
+		// 	console.error('Error adding document: ', error);
+		// 	setError('submit', {
+		// 		type: 'manual',
+		// 		message: 'Error adding user. Please try again.',
+		// 	});
+		// }
 	};
 
 	return (

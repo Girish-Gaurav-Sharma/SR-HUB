@@ -8,6 +8,7 @@ import 'antd/dist/reset.css'; // Ant Design styles
 // import AcquisitionDates from './components/AcquisitionDates';
 import ThreeMonthCalendar from './components/Calanderview';
 import Date from './components/Date';
+import NotificationSignupPage from './components/Form';
 
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);
@@ -114,7 +115,7 @@ const App = () => {
 							SR-HUB
 						</h1>
 						<div className="flex items-center gap-x-4">
-							{/* <button
+							<button
 								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
 									activeTab === 'AcquisitionDates'
 										? 'bg-blue-700'
@@ -123,8 +124,8 @@ const App = () => {
 								onClick={() =>
 									setActiveTab('AcquisitionDates')
 								}>
-								Acquisition Dates
-							</button> */}
+								Turn On Notifications
+							</button>
 							<button
 								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
 									activeTab === 'SatelliteCalendar'
@@ -156,12 +157,9 @@ const App = () => {
 					<div
 						className="absolute z-30 backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto h-[calc(100vh-7rem)] mt-8 rounded-3xl w-[calc(100vw-6rem)]  shadow-xl transition-all duration-300"
 						style={{ top: '4rem' }}>
-						{/* {activeTab === 'AcquisitionDates' && (
-							<AcquisitionDates
-								latitude={coordinates.lat}
-								longitude={coordinates.lng}
-							/>
-						)} */}
+						{activeTab === 'AcquisitionDates' && (
+							<NotificationSignupPage />
+						)}
 						{activeTab === 'SatelliteCalendar' && (
 							<ThreeMonthCalendar />
 						)}

@@ -4,7 +4,7 @@ import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
 import axios from 'axios';
 import 'antd/dist/reset.css'; // Ant Design styles
-
+import Download from './components/download';
 // import AcquisitionDates from './components/AcquisitionDates';
 import ThreeMonthCalendar from './components/Calanderview';
 import Date from './components/Date';
@@ -15,6 +15,7 @@ const App = () => {
 	const [showOlderNavBar, setShowOlderNavBar] = useState(true);
 	const [showCanvas, setShowCanvas] = useState(false);
 	const [activeTab, setActiveTab] = useState('AcquisitionDates');
+	const [showNewNavBar, setShowNewNavBar] = useState(false);
 
 	const [center, setCenter] = useState([51.505, -0.09]);
 	const [zoom, setZoom] = useState(2);
@@ -97,9 +98,9 @@ const App = () => {
 					<button
 						className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
 						onClick={() => {
-							setShowOlderNavBar(!showOlderNavBar);
-							setShowCanvas(!showCanvas);
-							setActiveTab('SatelliteCalendar');
+							setShowOlderNavBar(false);
+							setShowCanvas(true);
+							setShowNewNavBar(false);
 						}}>
 						Lock This Location
 					</button>
@@ -110,63 +111,110 @@ const App = () => {
 				<div
 					className="absolute inset-0 z-30 backdrop-blur-md flex items-center justify-center overflow-auto"
 					style={{ maxHeight: '100vh' }}>
-					<nav className="absolute inset-x-0 top-0 z-40 backdrop-blur-md bg-white/40 text-black flex items-center justify-between p-4 h-16 shadow-lg rounded-full mt-4 mx-6">
-						<h1 className="text-2xl ml-4 font-bold tracking-wide">
-							SR-HUB
-						</h1>
-						<div className="flex items-center gap-x-4">
+					{showNewNavBar && (
+						<nav className="absolute inset-x-0 top-0 z-40 backdrop-blur-md bg-white/40 text-black flex items-center justify-between p-4 h-16 shadow-lg rounded-full mt-4 mx-6">
+							<h1 className="text-2xl ml-4 font-bold tracking-wide">
+								SR-HUB
+							</h1>
+							<div className="flex items-center gap-x-4">
+								<button
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+										activeTab === 'AcquisitionDates'
+											? 'bg-blue-700'
+											: ''
+									}`}
+									onClick={() =>
+										setActiveTab('AcquisitionDates')
+									}>
+									Turn On Notifications
+								</button>
+								<button
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+										activeTab === 'SatelliteCalendar'
+											? 'bg-blue-700'
+											: ''
+									}`}
+									onClick={() =>
+										setActiveTab('SatelliteCalendar')
+									}>
+									Overpass Calendar
+								</button>
+								<button
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+										activeTab === 'Date'
+											? 'bg-blue-700'
+											: ''
+									}`}
+									onClick={() => setActiveTab('Date')}>
+									Data
+								</button>
+								<button
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+										activeTab === 'GenerateData'
+											? 'bg-blue-700'
+											: ''
+									}`}
+									onClick={() =>
+										setActiveTab('GenerateData')
+									}>
+									Generate Data
+								</button>
+							</div>
 							<button
-								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-									activeTab === 'AcquisitionDates'
-										? 'bg-blue-700'
-										: ''
-								}`}
-								onClick={() =>
-									setActiveTab('AcquisitionDates')
-								}>
-								Turn On Notifications
+								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+								onClick={() => {
+									setShowOlderNavBar(true);
+									setShowCanvas(false);
+									setShowNewNavBar(false);
+								}}>
+								Change Location
 							</button>
-							<button
-								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-									activeTab === 'SatelliteCalendar'
-										? 'bg-blue-700'
-										: ''
-								}`}
-								onClick={() =>
-									setActiveTab('SatelliteCalendar')
-								}>
-								Overpass Calendar
-							</button>
-							<button
-								className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-									activeTab === 'Date' ? 'bg-blue-700' : ''
-								}`}
-								onClick={() => setActiveTab('Date')}>
-								Data
-							</button>
-						</div>
-						<button
-							className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
-							onClick={() => {
-								setShowOlderNavBar(true);
-								setShowCanvas(false);
-							}}>
-							Change Location
-						</button>
-					</nav>
+						</nav>
+					)}
+
 					<div
 						className="absolute z-30 backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto h-[calc(100vh-7rem)] mt-8 rounded-3xl w-[calc(100vw-6rem)]  shadow-xl transition-all duration-300"
-						style={{ top: '4rem' }}>
-						{activeTab === 'AcquisitionDates' && (
-							<NotificationSignupPage />
+						style={{ top: showNewNavBar ? '4rem' : '0' }}>
+						{showNewNavBar ? (
+							<>
+								{activeTab === 'AcquisitionDates' && (
+									<NotificationSignupPage />
+								)}
+								{activeTab === 'SatelliteCalendar' && (
+									<ThreeMonthCalendar />
+								)}
+								{activeTab === 'Date' && <Date />}
+								{activeTab === 'GenerateData' && (
+									<Download
+										lat={coordinates.lat}
+										lng={coordinates.lng}
+										locationName={
+											selectedLocation.displayName
+										}
+									/>
+								)}
+							</>
+						) : (
+							<>
+								<Download
+									lat={coordinates.lat}
+									lng={coordinates.lng}
+									locationName={selectedLocation.displayName}
+								/>
+								<button
+									className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md mt-4"
+									onClick={() => {
+										setShowNewNavBar(true);
+										setActiveTab('SatelliteCalendar'); // or any default tab
+									}}>
+									Access the SR Haven
+								</button>
+							</>
 						)}
-						{activeTab === 'SatelliteCalendar' && (
-							<ThreeMonthCalendar />
-						)}
-						{activeTab === 'Date' && <Date />}
 					</div>
 				</div>
 			)}
+
 			<div className="flex-grow relative z-10">
 				<Map
 					center={center}

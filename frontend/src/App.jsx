@@ -17,14 +17,27 @@ const App = () => {
 	const [activeTab, setActiveTab] = useState('AcquisitionDates');
 	const [showNewNavBar, setShowNewNavBar] = useState(false);
 
-	const [center, setCenter] = useState([51.505, -0.09]);
-	const [zoom, setZoom] = useState(2);
-	const [selectedLocation, setSelectedLocation] = useState(null);
-	const [searchQuery, setSearchQuery] = useState('');
+	// Set the initial coordinates to Cheapside Farm
+	const [center, setCenter] = useState([53.504, -0.0669]);
+	const [zoom, setZoom] = useState(8);
+
+	// Initialize coordinates with Cheapside Farm's location
 	const [coordinates, setCoordinates] = useState({
-		lat: '51.505',
-		lng: '-0.09',
+		lat: '53.5040',
+		lng: '-0.0669',
 	});
+
+	// Initialize selectedLocation with the desired displayName and coordinates
+	const [selectedLocation, setSelectedLocation] = useState({
+		coordinates: [53.504, -0.0669],
+		displayName:
+			'Cheapside, Cheapside Farm, Waltham, North East Lincolnshire, England, DN37 0FJ, United Kingdom',
+	});
+
+	// Set the initial search query to the displayName
+	const [searchQuery, setSearchQuery] = useState(
+		'Cheapside, Cheapside Farm, Waltham, North East Lincolnshire, England, DN37 0FJ, United Kingdom'
+	);
 
 	const mapRef = useRef();
 
@@ -77,6 +90,18 @@ const App = () => {
 
 	console.log(coordinates);
 
+	const LocationInfoBar = ({ locationName, coordinates }) => (
+		<div
+			className="backdrop-blur-md bg-white/40 text-black flex items-center justify-center p-2 h-12 shadow-lg rounded-full mx-6 mt-4"
+			style={{ width: 'calc(100% - 3rem)' }}>
+			<p className="text-lg font-semibold">
+				You have locked your location to {locationName} (
+				{parseFloat(coordinates.lat).toFixed(4)},{' '}
+				{parseFloat(coordinates.lng).toFixed(4)})
+			</p>
+		</div>
+	);
+
 	return (
 		<div className="relative flex flex-col h-screen">
 			{showOlderNavBar && (
@@ -109,10 +134,12 @@ const App = () => {
 
 			{showCanvas && (
 				<div
-					className="absolute inset-0 z-30 backdrop-blur-md flex items-center justify-center overflow-auto"
+					className="absolute inset-0 z-30 backdrop-blur-md flex flex-col items-center justify-start overflow-auto"
 					style={{ maxHeight: '100vh' }}>
 					{showNewNavBar && (
-						<nav className="absolute inset-x-0 top-0 z-40 backdrop-blur-md bg-white/40 text-black flex items-center justify-between p-4 h-16 shadow-lg rounded-full mt-4 mx-6">
+						<nav
+							className="backdrop-blur-md bg-white/40 text-black flex items-center justify-between p-4 h-16 shadow-lg rounded-full mt-4 mx-6"
+							style={{ width: 'calc(100% - 3rem)' }}>
 							<h1 className="text-2xl ml-4 font-bold tracking-wide">
 								SR-HUB
 							</h1>
@@ -172,9 +199,17 @@ const App = () => {
 						</nav>
 					)}
 
+					{/* Location Info Bar */}
+					<LocationInfoBar
+						locationName={selectedLocation.displayName}
+						coordinates={coordinates}
+					/>
+
 					<div
-						className="absolute z-30 backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto h-[calc(100vh-7rem)] mt-8 rounded-3xl w-[calc(100vw-6rem)]  shadow-xl transition-all duration-300"
-						style={{ top: showNewNavBar ? '4rem' : '0' }}>
+						className="backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto rounded-3xl w-[calc(100vw-6rem)] shadow-xl transition-all duration-300 mt-4"
+						style={{
+							flexGrow: 1,
+						}}>
 						{showNewNavBar ? (
 							<>
 								{activeTab === 'AcquisitionDates' && (

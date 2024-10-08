@@ -2,15 +2,22 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// const API_URL = 'http://localhost:3000';
-const API_URL = 'https://sr-hub-backend.onrender.com';
+const API_URL = 'http://localhost:3000';
+// const API_URL = 'https://sr-hub-backend.onrender.com';
 
 const ThreeMonthCalendar = ({ latitude, longitude }) => {
 	const [dates, setDates] = useState([]);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(true); // Added loading state
 	const [countdown, setCountdown] = useState(30); // Countdown for 60 seconds
-
+	const today = new Date();
+	today.setDate(1); // Set to the first day of the month
+	// Calculate the date 4 months from now
+	const fourMonthsLater = new Date(
+		today.getFullYear(),
+		today.getMonth() + 5,
+		0 // Set to the last day of the month
+	);
 	// Countdown logic
 	useEffect(() => {
 		if (countdown > 0) {
@@ -107,9 +114,13 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 		return null;
 	};
 
+	// Helper function to check if two dates are the same day
+	const isSameDay = (date1, date2) =>
+		date1.toDateString() === date2.toDateString();
+
 	// Render
 	return (
-		<div className="flex  items-center justify-center gap-24 h-full">
+		<div className="flex items-center justify-center gap-24 h-full">
 			{loading ? (
 				// Show loading message with countdown
 				<div className="text-xl font-bold text-blue-600 flex flex-col items-center">
@@ -222,9 +233,13 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 					</div>
 
 					<Calendar
+						minDate={today} // Show from the current date
+						maxDate={fourMonthsLater} // Show up to 4 months later
+						selectable={false} // Disable date selection range
+						onClickDay={null}
 						view="month"
-						minDetail="month"
-						maxDetail="month"
+						minDetail="month" // Minimum view level allowed
+						maxDetail="month" // Maximum view level allowed
 						showNeighboringMonth={false}
 						next2Label={null}
 						prev2Label={null}
@@ -248,6 +263,14 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 								{'<'}
 							</span>
 						}
+						tileClassName={({ date, view }) => {
+							let classNames =
+								'cursor-default hover:bg-transparent focus:bg-transparent';
+							if (isSameDay(date, new Date())) {
+								classNames += ' bg-blue-100 rounded-lg';
+							}
+							return classNames.trim();
+						}}
 					/>
 				</>
 			)}

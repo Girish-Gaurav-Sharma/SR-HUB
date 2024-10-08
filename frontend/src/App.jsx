@@ -226,7 +226,10 @@ const App = () => {
 									<NotificationSignupPage />
 								)}
 								{activeTab === 'SatelliteCalendar' && (
-									<ThreeMonthCalendar />
+									<ThreeMonthCalendar
+										latitude={coordinates.lat}
+										longitude={coordinates.lng}
+									/>
 								)}
 								{activeTab === 'Date' && <Date />}
 								{activeTab === 'gallery' && (

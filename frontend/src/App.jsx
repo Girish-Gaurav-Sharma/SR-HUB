@@ -9,6 +9,7 @@ import Download from './components/download';
 import ThreeMonthCalendar from './components/Calanderview';
 import Date from './components/Date';
 import NotificationSignupPage from './components/Form';
+import SatelliteImageGallery from './components/databasmonth';
 
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);
@@ -157,6 +158,15 @@ const App = () => {
 								</button>
 								<button
 									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+										activeTab === 'gallery'
+											? 'bg-blue-700'
+											: ''
+									}`}
+									onClick={() => setActiveTab('gallery')}>
+									1 Month Database
+								</button>
+								<button
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
 										activeTab === 'SatelliteCalendar'
 											? 'bg-blue-700'
 											: ''
@@ -219,6 +229,10 @@ const App = () => {
 									<ThreeMonthCalendar />
 								)}
 								{activeTab === 'Date' && <Date />}
+								{activeTab === 'gallery' && (
+									<SatelliteImageGallery />
+								)}
+
 								{activeTab === 'GenerateData' && (
 									<Download
 										lat={coordinates.lat}

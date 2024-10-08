@@ -2,8 +2,8 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-const API_URL = 'http://localhost:3000';
-// const API_URL = 'https://sr-hub-backend.onrender.com';
+// const API_URL = 'http://localhost:3000';
+const API_URL = 'https://sr-hub-backend.onrender.com';
 
 const ThreeMonthCalendar = ({ latitude, longitude }) => {
 	const [dates, setDates] = useState([]);

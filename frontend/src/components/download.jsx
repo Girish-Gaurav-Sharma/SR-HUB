@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Download = ({ lat, long, name }) => {
+const Download = ({ lat, long }) => {
 	const [loading, setLoading] = useState({
 		prediction: false,
 		lastData: false,
@@ -24,13 +24,6 @@ const Download = ({ lat, long, name }) => {
 	return (
 		<div className="download-component bg-white p-6 rounded-lg shadow-lg">
 			<h2 className="text-2xl font-semibold mb-4">Download Options</h2>
-			<p className="mb-6 text-gray-700">
-				<span className="font-semibold">Location locked to:</span>{' '}
-				<span className="text-blue-600">{name}</span> at coordinates{' '}
-				<span className="text-blue-600">
-					({lat}, {long})
-				</span>
-			</p>
 			<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<button
 					onClick={() => handleGenerate('prediction')}
@@ -42,17 +35,7 @@ const Download = ({ lat, long, name }) => {
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
 							viewBox="0 0 24 24">
-							<circle
-								className="opacity-25"
-								cx="12"
-								cy="12"
-								r="10"
-								stroke="currentColor"
-								strokeWidth="4"></circle>
-							<path
-								className="opacity-75"
-								fill="currentColor"
-								d="M4 12a8 8 0 018-8v8H4z"></path>
+							{/* Spinner SVG paths */}
 						</svg>
 					) : null}
 					{loading.prediction

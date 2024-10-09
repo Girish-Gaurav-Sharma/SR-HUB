@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const SatelliteDataDisplay = () => {
+const Dataa = () => {
 	const data = {
 		'Landsat 8': {
 			metadata: {
@@ -438,4 +438,4 @@ const SatelliteDataDisplay = () => {
 	);
 };
 
-export default SatelliteDataDisplay;
+export default Dataa;

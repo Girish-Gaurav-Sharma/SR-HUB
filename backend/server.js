@@ -6,10 +6,10 @@ const {
 	getAcquisitionDatesForSatellites,
 } = require('./gee-server'); // Import the functions
 // const { checkAllDateTime } = require('./firebase');
-
+const { fetchAllSatelliteData } = require('./combo');
 // Create an Express application
 const app = express();
-const port = process.env.PORT || 3000; // Use the PORT environment variable or fallback to 3000 for local development
+const port = process.env.PORT || 5000; // Use the PORT environment variable or fallback to 3000 for local development
 
 app.use(cors());
 
@@ -51,39 +51,49 @@ initializeEE()
 				});
 		});
 
-		// Endpoint to call the functions defined in listobjectdega.js
-		// app.get('/get-full-metadata', async (req, res) => {
-		// 	const { longitude, latitude, startDate, endDate } = req.query; // Extract longitude, latitude, startDate, and endDate from query parameters
+		// Endpoint to call the functions defined in somwhere
+		app.get('/get-full-metadata', async (req, res) => {
+			const { longitude, latitude, startDate, endDate } = req.query; // Extract longitude, latitude, startDate, and endDate from query parameters
 
-		// 	if (!longitude || !latitude || !startDate || !endDate) {
-		// 		return res.status(400).json({
-		// 			error: 'Longitude, latitude, startDate, and endDate are required.',
-		// 		});
-		// 	}
+			// Check if all required query parameters are provided
+			if (!longitude || !latitude || !startDate || !endDate) {
+				return res.status(400).json({
+					error: 'Longitude, latitude, startDate, and endDate are required.',
+				});
+			}
 
-		// 	const coordinates = [parseFloat(longitude), parseFloat(latitude)]; // Convert to float
+			// Convert longitude and latitude to float values
+			const coordinates = [parseFloat(longitude), parseFloat(latitude)];
 
-		// 	console.log(
-		// 		'Request received for full metadata at coordinates:',
-		// 		coordinates
-		// 	);
+			console.log(
+				'Request received for full metadata at coordinates:',
+				coordinates,
+				'with date range:',
+				startDate,
+				endDate
+			);
 
-		// 	// Call the function to get full metadata
-		// 	const { getAcquisitionMetadata } = require('./listobjectdega');
-		// 	try {
-		// 		const metadata = await getAcquisitionMetadata(
-		// 			coordinates,
-		// 			startDate,
-		// 			endDate
-		// 		);
-		// 		res.json(metadata);
-		// 	} catch (err) {
-		// 		console.error('Error retrieving full metadata:', err);
-		// 		res.status(500).json({
-		// 			error: 'Failed to retrieve full metadata.',
-		// 		});
-		// 	}
-		// });
+			try {
+				// Call the function to get full metadata using coordinates, startDate, and endDate
+				const metadata = await fetchAllSatelliteData(
+					coordinates,
+					startDate,
+					endDate
+				);
+				console.log(metadata);
+				// Return the metadata as JSON response
+				res.json(metadata);
+			} catch (err) {
+				// Handle any errors that occur during the metadata retrieval
+				console.error('Error retrieving full metadata:', err);
+				res.status(500).json({
+					error: 'Failed to retrieve full metadata.',
+				});
+			}
+		});
+
+		// Start the Express server
+
 		// // Endpoint to run the check for date and time
 		// app.get('/runCheck', async (req, res) => {
 		// 	try {

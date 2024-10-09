@@ -7,7 +7,7 @@ import 'antd/dist/reset.css'; // Ant Design styles
 import Download from './components/download';
 // import AcquisitionDates from './components/AcquisitionDates';
 import ThreeMonthCalendar from './components/Calanderview';
-import Date from './components/Date';
+import Dataa from './components/Date';
 import NotificationSignupPage from './components/Form';
 import SatelliteImageGallery from './components/databasmonth';
 
@@ -17,7 +17,13 @@ const App = () => {
 	const [showCanvas, setShowCanvas] = useState(false);
 	const [activeTab, setActiveTab] = useState('AcquisitionDates');
 	const [showNewNavBar, setShowNewNavBar] = useState(false);
-
+	const [calendarData, setCalendarData] = useState([]);
+	const startDateValue = new Date().toISOString().split('T')[0];
+	const endDateValue = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+		.toISOString()
+		.split('T')[0];
+	const [endDate, setStartDateValue] = useState(startDateValue);
+	const [startDate, setEndDateValue] = useState(endDateValue);
 	// Set the initial coordinates to Cheapside Farm
 	const [center, setCenter] = useState([53.504, -0.0669]);
 	const [zoom, setZoom] = useState(8);
@@ -42,6 +48,9 @@ const App = () => {
 
 	const mapRef = useRef();
 
+	const onDataReceived = useCallback(data => {
+		setCalendarData(data);
+	}, []);
 	const handleCoordinatesChange = useCallback(() => {
 		if (mapRef.current) {
 			mapRef.current.flyTo([coordinates.lat, coordinates.lng], 8, {
@@ -182,7 +191,7 @@ const App = () => {
 											? 'bg-blue-700'
 											: ''
 									}`}
-									onClick={() => setActiveTab('Date')}>
+									onClick={() => setActiveTab('Dataa')}>
 									Data
 								</button>
 								<button
@@ -231,9 +240,14 @@ const App = () => {
 										longitude={coordinates.lng}
 									/>
 								)}
-								{activeTab === 'Date' && <Date />}
+								{activeTab === 'Dataa' && <Dataa />}
 								{activeTab === 'gallery' && (
-									<SatelliteImageGallery />
+									<SatelliteImageGallery
+										lat={coordinates.lat}
+										lng={coordinates.lng}
+										startDate={startDate}
+										endDate={endDate}
+									/>
 								)}
 
 								{activeTab === 'GenerateData' && (

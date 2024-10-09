@@ -8,28 +8,15 @@ const API_URL = 'https://sr-hub-backend.onrender.com';
 const ThreeMonthCalendar = ({ latitude, longitude }) => {
 	const [dates, setDates] = useState([]);
 	const [error, setError] = useState(null);
-	const [loading, setLoading] = useState(true); // Added loading state
-	const [countdown, setCountdown] = useState(30); // Countdown for 60 seconds
+	const [loading, setLoading] = useState(true);
+
 	const today = new Date();
 	today.setDate(1); // Set to the first day of the month
-	// Calculate the date 4 months from now
 	const fourMonthsLater = new Date(
 		today.getFullYear(),
 		today.getMonth() + 5,
 		0 // Set to the last day of the month
 	);
-	// Countdown logic
-	useEffect(() => {
-		if (countdown > 0) {
-			const timer = setInterval(() => {
-				setCountdown(prevCountdown => prevCountdown - 1);
-			}, 1000);
-
-			return () => clearInterval(timer); // Clean up the interval on unmount
-		} else {
-			setLoading(false); // Stop loading when countdown reaches 0
-		}
-	}, [countdown]);
 
 	// Fetch acquisition dates
 	useEffect(() => {
@@ -39,24 +26,23 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 				`${API_URL}/get-acquisition-dates?longitude=${longitude}&latitude=${latitude}`
 			)
 			.then(response => {
-				console.log('Response received:', response); // Log the response
+				console.log('Response received:', response);
 				if (response.status === 200) {
-					setDates(response.data); // Set dates if successful
+					setDates(response.data);
+					setLoading(false); // Set loading to false after data fetch
 				} else {
 					setError(`Unexpected response code: ${response.status}`);
-					console.error(
-						'Error:',
-						`Unexpected response code: ${response.status}`
-					);
+					setLoading(false); // Stop loading even if there's an error
 				}
 			})
 			.catch(error => {
-				console.error('Error during fetch:', error); // Log the full error object
+				console.error('Error during fetch:', error);
 				setError(
 					error.response
 						? `Server error: ${error.response.status} - ${error.response.data}`
 						: `Network error: ${error.message}`
 				);
+				setLoading(false); // Stop loading if there's an error
 			});
 	}, [latitude, longitude]);
 
@@ -122,19 +108,23 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 	return (
 		<div className="flex items-center justify-center gap-24 h-full">
 			{loading ? (
-				// Show loading message with countdown
+				// Loading animation with message
 				<div className="text-xl font-bold text-blue-600 flex flex-col items-center">
-					<p>Building Satellite Overpass Calendar...</p>
+					{/* Loading spinner with CSS animation */}
+					<div className="loader-spinner rounded-full border-t-4 border-b-4 border-blue-500 w-16 h-16 animate-spin"></div>
 					<p className="mt-4">
-						Countdown: <span className="text-3xl">{countdown}</span>{' '}
-						seconds
+						Building Satellite Overpass Calendar...
+					</p>
+					<p className="mt-2 text-lg text-gray-700">
+						It usually takes around 30 seconds. Please do not change
+						the tab.
 					</p>
 				</div>
 			) : dates.length === 0 ? (
-				// Show error message if no data is available after countdown
+				// Error message
 				<div className="text-xl font-bold text-red-600 flex flex-col items-center">
 					<p>No data available for the selected location.</p>
-					<p>Please try changing the location. Or try again later</p>
+					<p>Please try changing the location or try again later.</p>
 				</div>
 			) : (
 				<>
@@ -235,11 +225,11 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 					<Calendar
 						minDate={today} // Show from the current date
 						maxDate={fourMonthsLater} // Show up to 4 months later
-						selectable={false} // Disable date selection range
+						selectable={false}
 						onClickDay={null}
 						view="month"
-						minDetail="month" // Minimum view level allowed
-						maxDetail="month" // Maximum view level allowed
+						minDetail="month"
+						maxDetail="month"
 						showNeighboringMonth={false}
 						next2Label={null}
 						prev2Label={null}

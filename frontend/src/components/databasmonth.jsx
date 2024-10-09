@@ -1,159 +1,48 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+const port = 'https://sr-hub-backend.onrender.com';
+const SatelliteImageGallery = ({ lat, lng, startDate, endDate }) => {
+	// State for satellite data
+	const [data, setData] = useState([]);
 
-const SatelliteImageGallery = () => {
-	const data = [
-		{
-			sattelite_name: 'landsat 8',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'landsat 9',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'Sentinel 2A',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'Sentinel 2B',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'HLS',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'landsat 8',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'landsat 9',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'Sentinel 2A',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'Sentinel 2B',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'HLS',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'landsat 8',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'landsat 9',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'Sentinel 2A',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'Sentinel 2B',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-		{
-			sattelite_name: 'HLS',
-			cloudcover: 10,
-			date: '2022-01-01',
-			scene_id: 'LC08_L1GT_20220101_20220101_20220101_01_T1',
-			real_image_url:
-				'https://imageio.forbes.com/blogs-images/startswithabang/files/2016/04/429387main_s130e012141_hi-1200x764.jpg?format=jpg&width=1440',
-		},
-	];
-
-	// Fix any typos in 'satellite_name'
-	const fixedData = data.map(item => ({
-		...item,
-		satellite_name: item.satellite_name || item.sattelite_name,
-	}));
-
-	// Extract unique satellite names
-	const satelliteNames = [
-		...new Set(fixedData.map(item => item.satellite_name)),
-	];
-
-	// State for selected satellites
-	const [selectedSatellites, setSelectedSatellites] =
-		useState(satelliteNames);
-
-	// State for cloud cover range
+	// State for filters and sorting
+	const [selectedSatellites, setSelectedSatellites] = useState([]);
 	const [cloudCoverRange, setCloudCoverRange] = useState([0, 100]);
-
-	// State for sorting
 	const [sortOption, setSortOption] = useState({
 		field: 'date',
 		order: 'desc',
 	});
+
+	// Fetch data from the API
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const response = await axios.get(
+					`${port}/get-full-metadata?longitude=${lng}&latitude=${lat}&startDate=${startDate}&endDate=${endDate}`
+				);
+				const fetchedData = response.data;
+
+				setData(fetchedData);
+
+				// Extract unique satellite names
+				const satelliteNames = [
+					...new Set(fetchedData.map(item => item.satellite_name)),
+				];
+				setSelectedSatellites(satelliteNames);
+			} catch (error) {
+				console.error('Error fetching data:', error);
+			}
+		};
+
+		fetchData();
+	}, []);
 
 	// Filtered and sorted data
 	const [filteredData, setFilteredData] = useState([]);
 
 	// Update filtered data whenever filters or sorting change
 	useEffect(() => {
-		let filtered = fixedData.filter(
+		let filtered = data.filter(
 			item =>
 				selectedSatellites.includes(item.satellite_name) &&
 				item.cloudcover >= cloudCoverRange[0] &&
@@ -178,7 +67,7 @@ const SatelliteImageGallery = () => {
 		}
 
 		setFilteredData(filtered);
-	}, [selectedSatellites, cloudCoverRange, sortOption, fixedData]);
+	}, [selectedSatellites, cloudCoverRange, sortOption, data]);
 
 	// Handlers for filters and sorting options
 	const handleSatelliteChange = satelliteName => {
@@ -243,7 +132,9 @@ const SatelliteImageGallery = () => {
 						<h2 className="text-xl font-semibold mb-2">
 							Satellite Name
 						</h2>
-						{satelliteNames.map(name => (
+						{[
+							...new Set(data.map(item => item.satellite_name)),
+						].map(name => (
 							<div
 								key={name}
 								className="mb-1">
@@ -289,11 +180,17 @@ const SatelliteImageGallery = () => {
 							<div
 								key={index}
 								className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200">
-								<img
-									src={item.real_image_url}
-									alt={`Scene ${item.scene_id}`}
-									className="w-full h-48 object-cover mb-2 rounded"
-								/>
+								{item.real_image_url ? (
+									<img
+										src={item.real_image_url}
+										alt={`Scene ${item.systemId}`}
+										className="w-full h-48 object-cover mb-2 rounded"
+									/>
+								) : (
+									<div className="w-full h-48 flex items-center justify-center bg-gray-200 mb-2 rounded">
+										<p>Error loading image</p>
+									</div>
+								)}
 								<div>
 									<p>
 										<strong>Satellite:</strong>{' '}
@@ -308,8 +205,13 @@ const SatelliteImageGallery = () => {
 									</p>
 									<p>
 										<strong>Scene ID:</strong>{' '}
-										{item.scene_id}
+										{item.systemId}
 									</p>
+									{item.error && (
+										<p className="text-red-500">
+											<strong>Error:</strong> {item.error}
+										</p>
+									)}
 								</div>
 							</div>
 						))}

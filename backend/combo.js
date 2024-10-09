@@ -1,11 +1,13 @@
 // Import required modules
 require('dotenv').config();
 const ee = require('@google/earthengine');
-const geejson = require('./JSON/sr-data-comparison-1b68f9eda759.json'); // Update with your service account JSON
+// const geejson = require('./JSON/sr-data-comparison-1b68f9eda759.json'); // Update with your service account JSON
 
 // Initialize Earth Engine with your service account
 const initializeEE = () => {
 	return new Promise((resolve, reject) => {
+		const geejson = JSON.parse(process.env.GEE_SERVICE_ACCOUNT_KEY);
+
 		ee.data.authenticateViaPrivateKey(geejson, () => {
 			ee.initialize(null, null, () => {
 				console.log('Earth Engine client library initialized');

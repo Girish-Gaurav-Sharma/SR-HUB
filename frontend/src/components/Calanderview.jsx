@@ -94,8 +94,7 @@ const ThreeMonthCalendar = ({ dates }) => {
 						Building Satellite Overpass Calendar...
 					</p>
 					<p className="mt-2 text-lg text-gray-700">
-						It usually takes around 30 seconds. Please do not change
-						the tab.
+						It usually takes around 60 seconds.
 					</p>
 				</div>
 			) : dates.length === 0 ? (

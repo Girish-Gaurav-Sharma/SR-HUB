@@ -86,8 +86,7 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 						Loading Satellite Images...
 					</p>
 					<p className="mt-2 text-lg text-gray-700">
-						It usually takes around 5 minutes. Please do not change
-						the tab.
+						It usually takes around 5 minutes.
 					</p>
 				</div>
 			</div>

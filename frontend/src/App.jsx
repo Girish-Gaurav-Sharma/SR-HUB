@@ -11,6 +11,8 @@ import NotificationSignupPage from './components/Form';
 import SatelliteImageGallery from './components/databasmonth';
 //-------------------------------------------------------------------------------------
 const App = () => {
+	const [generateDataButtonClicked, setGenerateDataButtonClicked] =
+		useState(false);
 	const [isUserTyping, setIsUserTyping] = useState(false);
 	const [showOlderNavBar, setShowOlderNavBar] = useState(true);
 	const [showCanvas, setShowCanvas] = useState(false);
@@ -223,7 +225,7 @@ const App = () => {
 											: ''
 									}`}
 									onClick={() => setActiveTab('gallery')}>
-									1 Month Database
+									30 Days Database
 								</button>
 								<button
 									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
@@ -234,7 +236,7 @@ const App = () => {
 									onClick={() =>
 										setActiveTab('SatelliteCalendar')
 									}>
-									Overpass Calendar
+									Satellite Calendar
 								</button>
 								<button
 									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
@@ -243,7 +245,7 @@ const App = () => {
 											: ''
 									}`}
 									onClick={() => setActiveTab('Dataa')}>
-									Data
+									Complete SR Profile
 								</button>
 							</div>
 							<button
@@ -304,7 +306,13 @@ const App = () => {
 														onClick={() => {
 															fetchData();
 															setWantData(true);
-														}}>
+															setGenerateDataButtonClicked(
+																true
+															);
+														}}
+														disabled={
+															generateDataButtonClicked
+														}>
 														Generate Data
 													</button>
 												</div>

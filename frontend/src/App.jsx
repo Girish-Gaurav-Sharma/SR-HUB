@@ -42,8 +42,8 @@ const App = () => {
 	const [searchQuery, setSearchQuery] = useState(
 		'Cheapside, Cheapside Farm, Waltham, North East Lincolnshire, England, DN37 0FJ, United Kingdom'
 	);
-	const API_URL = 'http://localhost:5000';
-	// const API_URL = 'https://sr-hub-backend.onrender.com';
+	// const API_URL = 'http://localhost:5000';
+	const API_URL = 'https://sr-hub-backend.onrender.com';
 	const mapRef = useRef();
 
 	//-------------------------------------------------------------------------------------

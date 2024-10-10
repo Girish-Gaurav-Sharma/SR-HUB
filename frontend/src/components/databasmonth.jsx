@@ -1,44 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-const port = 'https://sr-hub-backend.onrender.com';
-const SatelliteImageGallery = ({ lat, lng, startDate, endDate }) => {
-	// State for satellite data
-	const [data, setData] = useState([]);
+const API_URL = 'http://localhost:5000';
+// const API_URL = 'https://sr-hub-backend.onrender.com';
 
-	// State for filters and sorting
-	const [selectedSatellites, setSelectedSatellites] = useState([]);
+const SatelliteImageGallery = ({ data, selectedSatellites }) => {
+	// State for satellite data
+
+	const [filteredData, setFilteredData] = useState([]);
 	const [cloudCoverRange, setCloudCoverRange] = useState([0, 100]);
 	const [sortOption, setSortOption] = useState({
 		field: 'date',
 		order: 'desc',
 	});
+	const [loading, setLoading] = useState(true);
 
-	// Fetch data from the API
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get(
-					`${port}/get-full-metadata?longitude=${lng}&latitude=${lat}&startDate=${startDate}&endDate=${endDate}`
-				);
-				const fetchedData = response.data;
-
-				setData(fetchedData);
-
-				// Extract unique satellite names
-				const satelliteNames = [
-					...new Set(fetchedData.map(item => item.satellite_name)),
-				];
-				setSelectedSatellites(satelliteNames);
-			} catch (error) {
-				console.error('Error fetching data:', error);
-			}
-		};
-
-		fetchData();
-	}, []);
-
-	// Filtered and sorted data
-	const [filteredData, setFilteredData] = useState([]);
+	let intervalId;
+	const checkDatata = () => {
+		if (data.length !== 0) {
+			setLoading(false);
+			clearInterval(intervalId);
+		}
+	};
+	intervalId = setInterval(checkDatata, 100);
 
 	// Update filtered data whenever filters or sorting change
 	useEffect(() => {
@@ -92,6 +75,24 @@ const SatelliteImageGallery = ({ lat, lng, startDate, endDate }) => {
 	const handleSortOrderChange = event => {
 		setSortOption({ ...sortOption, order: event.target.value });
 	};
+
+	// Render loading, error, or content
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center h-screen">
+				<div className="text-center flex flex-col items-center justify-center">
+					<div className="loader-spinner rounded-full border-t-4 border-b-4 border-blue-500 w-16 h-16 animate-spin"></div>
+					<p className="mt-4 text-xl font-bold">
+						Loading Satellite Images...
+					</p>
+					<p className="mt-2 text-lg text-gray-700">
+						It usually takes around 5 minutes. Please do not change
+						the tab.
+					</p>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="satellite-image-gallery flex fixed inset-0 z-50 bg-white">

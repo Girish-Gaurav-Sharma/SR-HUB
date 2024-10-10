@@ -1,15 +1,19 @@
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-// const API_URL = 'http://localhost:3000';
-const API_URL = 'https://sr-hub-backend.onrender.com';
-
-const ThreeMonthCalendar = ({ latitude, longitude }) => {
-	const [dates, setDates] = useState([]);
-	const [error, setError] = useState(null);
+import { useState } from 'react';
+const ThreeMonthCalendar = ({ dates }) => {
 	const [loading, setLoading] = useState(true);
 
+	let intervalId;
+	const checkDates = () => {
+		if (dates.length !== 0) {
+			setLoading(false);
+			clearInterval(intervalId);
+		}
+	};
+	intervalId = setInterval(checkDates, 100);
+	console.log('Loading:', loading);
+	console.log('dates:', dates);
 	const today = new Date();
 	today.setDate(1); // Set to the first day of the month
 	const fourMonthsLater = new Date(
@@ -19,32 +23,6 @@ const ThreeMonthCalendar = ({ latitude, longitude }) => {
 	);
 
 	// Fetch acquisition dates
-	useEffect(() => {
-		console.log('Fetching acquisition dates...');
-		axios
-			.get(
-				`${API_URL}/get-acquisition-dates?longitude=${longitude}&latitude=${latitude}`
-			)
-			.then(response => {
-				console.log('Response received:', response);
-				if (response.status === 200) {
-					setDates(response.data);
-					setLoading(false); // Set loading to false after data fetch
-				} else {
-					setError(`Unexpected response code: ${response.status}`);
-					setLoading(false); // Stop loading even if there's an error
-				}
-			})
-			.catch(error => {
-				console.error('Error during fetch:', error);
-				setError(
-					error.response
-						? `Server error: ${error.response.status} - ${error.response.data}`
-						: `Network error: ${error.message}`
-				);
-				setLoading(false); // Stop loading if there's an error
-			});
-	}, [latitude, longitude]);
 
 	// Prepare data for different satellites
 	const Landsat8 =

@@ -3,14 +3,13 @@ import Map from './components/Map';
 import Search from './components/Search';
 import CoordinateInput from './components/CoordinateInput';
 import axios from 'axios';
-import 'antd/dist/reset.css'; // Ant Design styles
+import 'antd/dist/reset.css';
 import Download from './components/download';
-// import AcquisitionDates from './components/AcquisitionDates';
 import ThreeMonthCalendar from './components/Calanderview';
 import Dataa from './components/Date';
 import NotificationSignupPage from './components/Form';
 import SatelliteImageGallery from './components/databasmonth';
-
+//-------------------------------------------------------------------------------------
 const App = () => {
 	const [isUserTyping, setIsUserTyping] = useState(false);
 	const [showOlderNavBar, setShowOlderNavBar] = useState(true);
@@ -24,33 +23,71 @@ const App = () => {
 		.split('T')[0];
 	const [endDate, setStartDateValue] = useState(startDateValue);
 	const [startDate, setEndDateValue] = useState(endDateValue);
-	// Set the initial coordinates to Cheapside Farm
+
 	const [center, setCenter] = useState([53.504, -0.0669]);
 	const [zoom, setZoom] = useState(8);
-
-	// Initialize coordinates with Cheapside Farm's location
+	const [dates, setdates] = useState([]);
+	const [wantData, setWantData] = useState(false);
 	const [coordinates, setCoordinates] = useState({
 		lat: '53.5040',
 		lng: '-0.0669',
 	});
-
-	// Initialize selectedLocation with the desired displayName and coordinates
+	const [data, setData] = useState([]);
 	const [selectedLocation, setSelectedLocation] = useState({
 		coordinates: [53.504, -0.0669],
 		displayName:
 			'Cheapside, Cheapside Farm, Waltham, North East Lincolnshire, England, DN37 0FJ, United Kingdom',
 	});
-
-	// Set the initial search query to the displayName
+	const [selectedSatellites, setSelectedSatellites] = useState([]);
 	const [searchQuery, setSearchQuery] = useState(
 		'Cheapside, Cheapside Farm, Waltham, North East Lincolnshire, England, DN37 0FJ, United Kingdom'
 	);
-
+	const API_URL = 'http://localhost:5000';
+	// const API_URL = 'https://sr-hub-backend.onrender.com';
 	const mapRef = useRef();
 
-	const onDataReceived = useCallback(data => {
-		setCalendarData(data);
-	}, []);
+	//-------------------------------------------------------------------------------------
+
+	const fetchAcquisitionDates = async () => {
+		console.log('Fetching acquisition dates...');
+
+		try {
+			const response = await axios.get(
+				`${API_URL}/get-acquisition-dates?longitude=${coordinates.lng}&latitude=${coordinates.lat}`
+			);
+			console.log('Response received:', response);
+			if (response.status === 200) {
+				setdates(response.data);
+			} else {
+				console.log(`Unexpected response code: ${response.status}`);
+			}
+		} catch (error) {
+			console.error('Error during fetch:', error);
+		} finally {
+			console.log('Finished fetching acquisition dates.'); // Stop loading regardless of the outcome
+		}
+	};
+	//-------------------------------------------------------------------------------------
+
+	const fetchData = async () => {
+		try {
+			const response = await axios.get(
+				`${API_URL}/get-full-metadata?longitude=${coordinates.lng}&latitude=${coordinates.lat}&startDate=${startDate}&endDate=${endDate}`
+			);
+			const fetchedData = response.data;
+
+			setData(fetchedData);
+
+			const satelliteNames = [
+				...new Set(fetchedData.map(item => item.satellite_name)),
+			];
+			setSelectedSatellites(satelliteNames);
+		} catch (error) {
+			console.error('Error fetching data:', error);
+		}
+	};
+	//-------------------------------------------------------------------------------------
+
 	const handleCoordinatesChange = useCallback(() => {
 		if (mapRef.current) {
 			mapRef.current.flyTo([coordinates.lat, coordinates.lng], 8, {
@@ -58,15 +95,12 @@ const App = () => {
 			});
 		}
 	}, [coordinates, mapRef]);
-
-	useEffect(() => {
-		handleCoordinatesChange();
-	}, [handleCoordinatesChange]);
+	//-------------------------------------------------------------------------------------
 
 	const handleUserTyping = useCallback(isTyping => {
 		setIsUserTyping(isTyping);
 	}, []);
-
+	//-------------------------------------------------------------------------------------
 	const handleLocationChange = useCallback(
 		async (coordinates, displayName) => {
 			setSelectedLocation({ coordinates, displayName });
@@ -93,12 +127,11 @@ const App = () => {
 		},
 		[isUserTyping]
 	);
-
+	//-------------------------------------------------------------------------------------
 	const handleZoomChange = newZoom => {
 		setZoom(newZoom);
 	};
-
-	console.log(coordinates);
+	//-------------------------------------------------------------------------------------
 
 	const LocationInfoBar = ({ locationName, coordinates }) => (
 		<div
@@ -111,7 +144,11 @@ const App = () => {
 			</p>
 		</div>
 	);
-
+	//-------------------------------------------------------------------------------------
+	useEffect(() => {
+		handleCoordinatesChange();
+	}, [handleCoordinatesChange]);
+	//-------------------------------------------------------------------------------------
 	return (
 		<div className="relative flex flex-col h-screen">
 			{showOlderNavBar && (
@@ -136,6 +173,10 @@ const App = () => {
 							setShowOlderNavBar(false);
 							setShowCanvas(true);
 							setShowNewNavBar(false);
+							fetchAcquisitionDates();
+							setdates([]);
+							setData([]);
+							setSelectedSatellites([]);
 						}}>
 						Lock This Location
 					</button>
@@ -194,26 +235,22 @@ const App = () => {
 									onClick={() => setActiveTab('Dataa')}>
 									Data
 								</button>
-								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'GenerateData'
-											? 'bg-blue-700'
-											: ''
-									}`}
-									onClick={() =>
-										setActiveTab('GenerateData')
-									}>
-									Generate Data
-								</button>
 							</div>
 							<button
-								className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md"
+								className={`${
+									wantData && data.length === 0
+										? 'bg-red-600 hover:bg-red-700'
+										: 'bg-blue-600 hover:bg-blue-700'
+								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md`}
 								onClick={() => {
 									setShowOlderNavBar(true);
 									setShowCanvas(false);
 									setShowNewNavBar(false);
-								}}>
-								Change Location
+								}}
+								disabled={wantData && data.length === 0}>
+								{wantData && data.length === 0
+									? 'Wait till Data is received'
+									: 'Change Location'}
 							</button>
 						</nav>
 					)}
@@ -235,38 +272,77 @@ const App = () => {
 									<NotificationSignupPage />
 								)}
 								{activeTab === 'SatelliteCalendar' && (
-									<ThreeMonthCalendar
-										latitude={coordinates.lat}
-										longitude={coordinates.lng}
-									/>
+									<ThreeMonthCalendar dates={dates} />
 								)}
 								{activeTab === 'Dataa' && <Dataa />}
 								{activeTab === 'gallery' && (
-									<SatelliteImageGallery
-										lat={coordinates.lat}
-										lng={coordinates.lng}
-										startDate={startDate}
-										endDate={endDate}
-									/>
-								)}
+									<>
+										<div className="relative">
+											{/* Full screen overlay */}
+											{!wantData && (
+												<div className="fixed inset-0 bg-white bg-opacity-90 flex flex-col justify-center items-center z-50">
+													<p className="mt-4 text-2xl text-center max-w-md font-bold">
+														PLEASE BE AWARE THAT
+														GENERATING DATA WILL
+														TAKE AROUND 5 MINUTES
+														AND YOU WON'T BE ABLE TO
+														CHANGE THE LOCATION
+														UNTIL THE SERVER
+														RECEIVES THE DATA.
+													</p>
+													<button
+														className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-md"
+														onClick={() => {
+															fetchData();
+															setWantData(true);
+														}}>
+														Generate Data
+													</button>
+												</div>
+											)}
+											{/* Your normal content goes here */}
+											<div className="flex items-center mb-4">
+												{/* Other content */}
+											</div>
+										</div>
 
-								{activeTab === 'GenerateData' && (
-									<Download
-										lat={coordinates.lat}
-										lng={coordinates.lng}
-										locationName={
-											selectedLocation.displayName
-										}
-									/>
+										<SatelliteImageGallery
+											data={data}
+											selectedSatellites={
+												selectedSatellites
+											}
+										/>
+									</>
 								)}
 							</>
 						) : (
 							<>
-								<Download
-									lat={coordinates.lat}
-									lng={coordinates.lng}
-									locationName={selectedLocation.displayName}
-								/>
+								<div className="download-component bg-white p-6 rounded-lg shadow-lg">
+									<h2 className="text-2xl font-semibold mb-4">
+										Download Options
+									</h2>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+										<button
+											onClick={() =>
+												fetchAcquisitionDates()
+											}
+											className="bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 flex items-center justify-center">
+											Generate Prediction Calendar
+										</button>
+
+										<button className="bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 flex items-center justify-center">
+											Last Data of All Satellites
+										</button>
+
+										<button className="bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 flex items-center justify-center">
+											Generate 1-Month Dataset
+										</button>
+
+										<button className="bg-purple-500 text-white py-3 px-4 rounded-lg hover:bg-purple-600 flex items-center justify-center">
+											Generate Custom Dataset
+										</button>
+									</div>
+								</div>
 								<button
 									className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md mt-4"
 									onClick={() => {

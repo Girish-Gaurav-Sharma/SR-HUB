@@ -9,7 +9,8 @@ const {
 const { fetchAllSatelliteData } = require('./combo');
 // Create an Express application
 const app = express();
-const port = process.env.PORT || 5000; // Use the PORT environment variable or fallback to 3000 for local development
+const port = process.env.PORT;
+// const port = 5000; // Use the PORT environment variable or fallback to 3000 for local development
 
 app.use(cors());
 

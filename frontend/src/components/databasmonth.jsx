@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-const API_URL = 'http://localhost:5000';
-// const API_URL = 'https://sr-hub-backend.onrender.com';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaArrowLeft, FaArrowRight, FaTimes } from 'react-icons/fa';
 
 const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 	// State for satellite data
-
 	const [filteredData, setFilteredData] = useState([]);
 	const [cloudCoverRange, setCloudCoverRange] = useState([0, 100]);
 	const [sortOption, setSortOption] = useState({
@@ -13,6 +11,8 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 		order: 'desc',
 	});
 	const [loading, setLoading] = useState(true);
+	const [fullscreenImage, setFullscreenImage] = useState(null);
+	const [currentIndex, setCurrentIndex] = useState(0);
 
 	let intervalId;
 	const checkDatata = () => {
@@ -74,6 +74,28 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 
 	const handleSortOrderChange = event => {
 		setSortOption({ ...sortOption, order: event.target.value });
+	};
+
+	const openFullscreen = index => {
+		setCurrentIndex(index);
+		setFullscreenImage(filteredData[index]);
+	};
+
+	const closeFullscreen = () => {
+		setFullscreenImage(null);
+	};
+
+	const showNextImage = () => {
+		const newIndex = (currentIndex + 1) % filteredData.length;
+		setCurrentIndex(newIndex);
+		setFullscreenImage(filteredData[newIndex]);
+	};
+
+	const showPreviousImage = () => {
+		const newIndex =
+			(currentIndex - 1 + filteredData.length) % filteredData.length;
+		setCurrentIndex(newIndex);
+		setFullscreenImage(filteredData[newIndex]);
 	};
 
 	// Render loading, error, or content
@@ -177,9 +199,11 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 				<div className="flex-1 overflow-y-auto p-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 						{filteredData.map((item, index) => (
-							<div
+							<motion.div
 								key={index}
-								className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200">
+								className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200"
+								whileHover={{ scale: 1.05 }}
+								onClick={() => openFullscreen(index)}>
 								{item.real_image_url ? (
 									<img
 										src={item.real_image_url}
@@ -207,13 +231,8 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 										<strong>Scene ID:</strong>{' '}
 										{item.systemId}
 									</p>
-									{item.error && (
-										<p className="text-red-500">
-											<strong>Error:</strong> {item.error}
-										</p>
-									)}
 								</div>
-							</div>
+							</motion.div>
 						))}
 						{filteredData.length === 0 && (
 							<p>No images match the selected filters.</p>
@@ -221,6 +240,45 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 					</div>
 				</div>
 			</div>
+
+			{/* Fullscreen View */}
+			<AnimatePresence>
+				{fullscreenImage && (
+					<motion.div
+						className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}>
+						<div className="relative w-full h-full flex items-center justify-center">
+							<motion.img
+								src={fullscreenImage.real_image_url}
+								alt={`Scene ${fullscreenImage.systemId}`}
+								className="max-w-4xl max-h-3/4 object-contain"
+								initial={{ scale: 0.8 }}
+								animate={{ scale: 1 }}
+								exit={{ scale: 0.8 }}
+							/>
+							{/* Close button */}
+							<button
+								onClick={closeFullscreen}
+								className="absolute top-4 right-4 text-white text-2xl">
+								<FaTimes />
+							</button>
+							{/* Previous and Next buttons */}
+							<button
+								onClick={showPreviousImage}
+								className="absolute left-4 text-white text-2xl">
+								<FaArrowLeft />
+							</button>
+							<button
+								onClick={showNextImage}
+								className="absolute right-4 text-white text-2xl">
+								<FaArrowRight />
+							</button>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 };

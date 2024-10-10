@@ -189,6 +189,7 @@ const App = () => {
 							setdates([]);
 							setData([]);
 							setSelectedSatellites([]);
+							setWantData(false);
 						}}>
 						Lock This Location
 					</button>

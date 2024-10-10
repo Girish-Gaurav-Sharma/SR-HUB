@@ -133,17 +133,27 @@ const App = () => {
 	};
 	//-------------------------------------------------------------------------------------
 
-	const LocationInfoBar = ({ locationName, coordinates }) => (
-		<div
-			className="backdrop-blur-md bg-white/40 text-black flex items-center justify-center p-2 h-12 shadow-lg rounded-full mx-6 mt-4"
-			style={{ width: 'calc(100% - 3rem)' }}>
-			<p className="text-lg font-semibold">
-				You have locked your location to {locationName} (
-				{parseFloat(coordinates.lat).toFixed(4)},{' '}
-				{parseFloat(coordinates.lng).toFixed(4)})
-			</p>
-		</div>
-	);
+	const LocationInfoBar = ({ locationName, coordinates }) => {
+		const [name, ...rest] = locationName.split(',');
+		const address = [name, ...rest].join(',').slice(0, 30);
+		const lat = parseFloat(coordinates.lat).toFixed(4);
+		const lng = parseFloat(coordinates.lng).toFixed(4);
+		return (
+			<div
+				className="backdrop-blur-md bg-white/40 text-black flex items-center justify-center p-2 h-12 shadow-lg rounded-full mx-6 mt-4"
+				style={{ width: 'calc(100% - 3rem)' }}>
+				<p className="text-lg font-semibold">
+					You have locked your location to{' '}
+					<span className="bg-yellow-200 p-1 rounded-md">
+						{address}
+					</span>{' '}
+					(<span className="bg-yellow-200 p-1 rounded-md">{lat}</span>
+					,{' '}
+					<span className="bg-yellow-200 p-1 rounded-md">{lng}</span>)
+				</p>
+			</div>
+		);
+	};
 	//-------------------------------------------------------------------------------------
 	useEffect(() => {
 		handleCoordinatesChange();
@@ -172,7 +182,7 @@ const App = () => {
 						onClick={() => {
 							setShowOlderNavBar(false);
 							setShowCanvas(true);
-							setShowNewNavBar(false);
+							setShowNewNavBar(true);
 							fetchAcquisitionDates();
 							setdates([]);
 							setData([]);
@@ -245,7 +255,6 @@ const App = () => {
 								onClick={() => {
 									setShowOlderNavBar(true);
 									setShowCanvas(false);
-									setShowNewNavBar(false);
 								}}
 								disabled={wantData && data.length === 0}>
 								{wantData && data.length === 0
@@ -257,7 +266,7 @@ const App = () => {
 
 					{/* Location Info Bar */}
 					<LocationInfoBar
-						locationName={selectedLocation.displayName}
+						locationName={searchQuery}
 						coordinates={coordinates}
 					/>
 
@@ -266,7 +275,7 @@ const App = () => {
 						style={{
 							flexGrow: 1,
 						}}>
-						{showNewNavBar ? (
+						{showNewNavBar && (
 							<>
 								{activeTab === 'AcquisitionDates' && (
 									<NotificationSignupPage />
@@ -314,43 +323,6 @@ const App = () => {
 										/>
 									</>
 								)}
-							</>
-						) : (
-							<>
-								<div className="download-component bg-white p-6 rounded-lg shadow-lg">
-									<h2 className="text-2xl font-semibold mb-4">
-										Download Options
-									</h2>
-									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-										<button
-											onClick={() =>
-												fetchAcquisitionDates()
-											}
-											className="bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 flex items-center justify-center">
-											Generate Prediction Calendar
-										</button>
-
-										<button className="bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 flex items-center justify-center">
-											Last Data of All Satellites
-										</button>
-
-										<button className="bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 flex items-center justify-center">
-											Generate 1-Month Dataset
-										</button>
-
-										<button className="bg-purple-500 text-white py-3 px-4 rounded-lg hover:bg-purple-600 flex items-center justify-center">
-											Generate Custom Dataset
-										</button>
-									</div>
-								</div>
-								<button
-									className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md mt-4"
-									onClick={() => {
-										setShowNewNavBar(true);
-										setActiveTab('SatelliteCalendar'); // or any default tab
-									}}>
-									Access the SR Haven
-								</button>
 							</>
 						)}
 					</div>

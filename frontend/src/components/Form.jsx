@@ -107,7 +107,7 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 			<h2 className="text-xl font-bold mb-4">
 				Sign up for SMS and email notifications, and get notified at a
 				specified lead time before the overpass of the satellite for
-				your location.
+				your locked location.
 			</h2>
 			{errors.submit && (
 				<p className="text-red-500">{errors.submit.message}</p>

@@ -281,7 +281,11 @@ const App = () => {
 						{showNewNavBar && (
 							<>
 								{activeTab === 'AcquisitionDates' && (
-									<NotificationSignupPage />
+									<NotificationSignupPage
+										longitude={coordinates.lng}
+										latitude={coordinates.lat}
+										name={searchQuery}
+									/>
 								)}
 								{activeTab === 'SatelliteCalendar' && (
 									<ThreeMonthCalendar dates={dates} />

@@ -163,38 +163,117 @@ const App = () => {
 	//-------------------------------------------------------------------------------------
 	return (
 		<div className="relative flex flex-col h-screen">
-			{showOlderNavBar && (
-				<nav className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-					<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
-					<div className="flex items-center gap-x-4">
-						<Search
-							onLocationSelected={handleLocationChange}
-							searchQuery={searchQuery}
-							setSearchQuery={setSearchQuery}
-							onUserTyping={handleUserTyping}
-						/>
-						<CoordinateInput
-							onCoordinatesChanged={handleLocationChange}
-							coordinates={coordinates}
-							setCoordinates={setCoordinates}
+			<div className="relative flex flex-col h-screen">
+				<div className="relative flex flex-col h-screen">
+					<div className="relative flex flex-col h-screen">
+						{showOlderNavBar && (
+							<nav className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex flex-col md:flex-row items-center justify-between p-4 h-auto md:h-16 shadow-md rounded-3xl mt-3 mx-5 md:mx-8">
+								{/* "SR-HUB" is only shown on desktop screens (md and above) */}
+								<h1 className="text-2xl font-bold hidden md:block ml-4">SR-HUB</h1>
+
+								<div className="flex flex-col md:flex-row items-center gap-x-2 gap-y-2 md:gap-x-4 my-2 md:my-0 w-full md:w-auto">
+									<Search
+										onLocationSelected={handleLocationChange}
+										searchQuery={searchQuery}
+										setSearchQuery={setSearchQuery}
+										onUserTyping={handleUserTyping}
+									/>
+
+									{/* Adjusting CoordinateInput to be in a column layout on mobile */}
+									<div className="flex flex-col md:flex-row items-center gap-x-1 gap-y-1 md:gap-x-2 my-2 md:my-0 w-full max-w-xs px-1 py-1">
+										<CoordinateInput
+											onCoordinatesChanged={handleLocationChange}
+											coordinates={coordinates}
+											setCoordinates={setCoordinates}
+											className="truncate p-2"
+										/>
+									</div>
+
+
+								</div>
+
+								<button
+									className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 md:px-4 rounded-full mt-2 md:mt-0 w-full md:w-auto text-sm md:text-base"
+									onClick={() => {
+										setShowOlderNavBar(false);
+										setShowCanvas(true);
+										setShowNewNavBar(true);
+										fetchAcquisitionDates();
+										setdates([]);
+										setData([]);
+										setSelectedSatellites([]);
+										setWantData(false);
+									}}
+								>
+									Lock Location
+								</button>
+							</nav>
+						)}
+
+						{showCanvas && (
+							<div
+								className="absolute inset-0 z-30 backdrop-blur-md flex flex-col items-center justify-start overflow-auto"
+								style={{ maxHeight: '100vh' }}
+							>
+								{/* Rest of the code for showCanvas section */}
+							</div>
+						)}
+
+						<div className="flex-grow relative z-10">
+							<Map
+								center={center}
+								zoom={zoom}
+								ref={mapRef}
+								selectedLocation={selectedLocation}
+								onLocationChange={handleLocationChange}
+								onZoomChange={handleZoomChange}
+							/>
+						</div>
+					</div>
+
+					{showCanvas && (
+						<div
+							className="absolute inset-0 z-30 backdrop-blur-md flex flex-col items-center justify-start overflow-auto"
+							style={{ maxHeight: '100vh' }}
+						>
+							{/* Rest of the code for showCanvas section */}
+						</div>
+					)}
+
+					<div className="flex-grow relative z-10">
+						<Map
+							center={center}
+							zoom={zoom}
+							ref={mapRef}
+							selectedLocation={selectedLocation}
+							onLocationChange={handleLocationChange}
+							onZoomChange={handleZoomChange}
 						/>
 					</div>
-					<button
-						className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-						onClick={() => {
-							setShowOlderNavBar(false);
-							setShowCanvas(true);
-							setShowNewNavBar(true);
-							fetchAcquisitionDates();
-							setdates([]);
-							setData([]);
-							setSelectedSatellites([]);
-							setWantData(false);
-						}}>
-						Lock This Location
-					</button>
-				</nav>
-			)}
+				</div>
+
+
+				{showCanvas && (
+					<div
+						className="absolute inset-0 z-30 backdrop-blur-md flex flex-col items-center justify-start overflow-auto"
+						style={{ maxHeight: '100vh' }}
+					>
+						{/* Rest of the code for showCanvas section */}
+					</div>
+				)}
+
+				<div className="flex-grow relative z-10">
+					<Map
+						center={center}
+						zoom={zoom}
+						ref={mapRef}
+						selectedLocation={selectedLocation}
+						onLocationChange={handleLocationChange}
+						onZoomChange={handleZoomChange}
+					/>
+				</div>
+			</div>
+
 
 			{showCanvas && (
 				<div
@@ -203,68 +282,64 @@ const App = () => {
 					{showNewNavBar && (
 						<nav
 							className="backdrop-blur-md bg-white/40 text-black flex items-center justify-between p-4 h-16 shadow-lg rounded-full mt-4 mx-6"
-							style={{ width: 'calc(100% - 3rem)' }}>
+							style={{ width: 'calc(100% - 3rem)' }}
+						>
 							<h1 className="text-2xl ml-4 font-bold tracking-wide">
 								SR-HUB
 							</h1>
 							<div className="flex items-center gap-x-4">
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'AcquisitionDates'
-											? 'bg-blue-700'
-											: ''
-									}`}
-									onClick={() =>
-										setActiveTab('AcquisitionDates')
-									}>
+									className={`${activeTab === 'AcquisitionDates'
+										? 'bg-orange-500 ring-2 ring-orange-300'
+										: 'bg-blue-500'
+										} text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300 shadow-md hover:bg-opacity-80`}
+									onClick={() => setActiveTab('AcquisitionDates')}
+								>
 									Turn On Notifications
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'gallery'
-											? 'bg-blue-700'
-											: ''
-									}`}
-									onClick={() => setActiveTab('gallery')}>
+									className={`${activeTab === 'gallery'
+										? 'bg-orange-500 ring-2 ring-orange-300'
+										: 'bg-blue-500'
+										} text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300 shadow-md hover:bg-opacity-80`}
+									onClick={() => setActiveTab('gallery')}
+								>
 									30 Days Database
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'SatelliteCalendar'
-											? 'bg-blue-700'
-											: ''
-									}`}
-									onClick={() =>
-										setActiveTab('SatelliteCalendar')
-									}>
+									className={`${activeTab === 'SatelliteCalendar'
+										? 'bg-orange-500 ring-2 ring-orange-300'
+										: 'bg-blue-500'
+										} text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300 shadow-md hover:bg-opacity-80`}
+									onClick={() => setActiveTab('SatelliteCalendar')}
+								>
 									Satellite Calendar
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'Date'
-											? 'bg-blue-700'
-											: ''
-									}`}
-									onClick={() => setActiveTab('Dataa')}>
+									className={`${activeTab === 'Dataa'
+										? 'bg-orange-500 ring-2 ring-orange-300'
+										: 'bg-blue-500'
+										} text-white font-semibold py-2 px-6 rounded-full transition-colors duration-300 shadow-md hover:bg-opacity-80`}
+									onClick={() => setActiveTab('Dataa')}
+								>
 									Complete SR Profile
 								</button>
 							</div>
 							<button
-								className={`${
-									wantData && data.length === 0
-										? 'bg-red-600 hover:bg-red-700'
-										: 'bg-blue-600 hover:bg-blue-700'
-								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md`}
+								className={`${wantData && data.length === 0
+									? 'bg-red-600 hover:bg-red-700'
+									: 'bg-blue-600 hover:bg-blue-700'
+									} text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md`}
 								onClick={() => {
 									setShowOlderNavBar(true);
 									setShowCanvas(false);
 								}}
-								disabled={wantData && data.length === 0}>
-								{wantData && data.length === 0
-									? 'Wait till Data is received'
-									: 'Change Location'}
+								disabled={wantData && data.length === 0}
+							>
+								{wantData && data.length === 0 ? 'Wait till Data is received' : 'Change Location'}
 							</button>
 						</nav>
+
 					)}
 
 					{/* Location Info Bar */}

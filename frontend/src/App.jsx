@@ -11,6 +11,7 @@ import NotificationSignupPage from './components/Form';
 import SatelliteImageGallery from './components/databasmonth';
 //-------------------------------------------------------------------------------------
 const App = () => {
+	const [showGallery, setShowGallery] = useState(false);
 	const [generateDataButtonClicked, setGenerateDataButtonClicked] =
 		useState(false);
 	const [isUserTyping, setIsUserTyping] = useState(false);
@@ -34,6 +35,18 @@ const App = () => {
 		lat: '53.5040',
 		lng: '-0.0669',
 	});
+	const [satelliteSelections, setSatelliteSelections] = useState([]);
+
+	const handleSatelliteSelection = event => {
+		const { value, checked } = event.target;
+		setSatelliteSelections(prevSelections =>
+			checked
+				? [...prevSelections, value]
+				: prevSelections.filter(item => item !== value)
+		);
+	};
+	const [cloudCover, setCloudCover] = useState(50); // Default 50%
+	const [dimension, setDimension] = useState(1000); // Default 1000 meters
 	const [data, setData] = useState([]);
 	const [selectedLocation, setSelectedLocation] = useState({
 		coordinates: [53.504, -0.0669],
@@ -226,7 +239,7 @@ const App = () => {
 											: ''
 									}`}
 									onClick={() => setActiveTab('gallery')}>
-									30 Days Database
+									Request Data
 								</button>
 								<button
 									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
@@ -296,44 +309,149 @@ const App = () => {
 										<div className="relative">
 											{/* Full screen overlay */}
 											{!wantData && (
-												<div className="fixed inset-0 bg-white bg-opacity-90 flex flex-col justify-center items-center z-50">
-													<p className="mt-4 text-2xl text-center max-w-md font-bold">
-														PLEASE BE AWARE THAT
-														GENERATING DATA WILL
-														TAKE AROUND 5 MINUTES
-														AND YOU WON'T BE ABLE TO
-														CHANGE THE LOCATION
-														UNTIL THE SERVER
-														RECEIVES THE DATA.
-													</p>
-													<button
-														className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-md"
-														onClick={() => {
-															fetchData();
-															setWantData(true);
-															setGenerateDataButtonClicked(
-																true
-															);
-														}}
-														disabled={
-															generateDataButtonClicked
-														}>
-														Generate Data
-													</button>
+												<div className="inset-0 flex items-center justify-center bg-transparent z-50">
+													<div className="bg-white rounded-lg shadow-lg p-6 md:p-8 w-full max-w-lg space-y-6">
+														<h2 className="text-2xl font-semibold text-gray-800 text-center">
+															Configure Your Data
+															Selection
+														</h2>
+
+														{/* Database Selection */}
+														<div className="space-y-4 border-t border-b py-4 px-2">
+															<h3 className="text-lg font-medium text-gray-700">
+																Select Databases
+															</h3>
+															<div className="grid grid-cols-2 gap-3">
+																{[
+																	'Landsat 8',
+																	'Landsat 9',
+																	'Sentinel-2A',
+																	'Sentinel-2B',
+																	'HLS',
+																].map(
+																	satellite => (
+																		<label
+																			key={
+																				satellite
+																			}
+																			className="flex items-center space-x-2 text-gray-700">
+																			<input
+																				type="checkbox"
+																				value={
+																					satellite
+																				}
+																				onChange={
+																					handleSatelliteSelection
+																				}
+																				className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+																			/>
+																			<span className="text-sm font-medium">
+																				{
+																					satellite
+																				}
+																			</span>
+																		</label>
+																	)
+																)}
+															</div>
+														</div>
+
+														{/* Cloud Cover Slider */}
+														<div className="space-y-2">
+															<h3 className="text-lg font-medium text-gray-700 text-center">
+																Maximum Cloud
+																Cover (%)
+															</h3>
+															<input
+																type="range"
+																min="0"
+																max="100"
+																value={
+																	cloudCover
+																}
+																onChange={e =>
+																	setCloudCover(
+																		e.target
+																			.value
+																	)
+																}
+																className="appearance-none w-full h-3 bg-gray-300 rounded-full focus:outline-none"
+															/>
+															<span className="block text-center text-sm text-gray-600">
+																{cloudCover}%
+															</span>
+														</div>
+
+														{/* Data Dimension Slider */}
+														<div className="space-y-2">
+															<h3 className="text-lg font-medium text-gray-700 text-center">
+																Data Dimension
+																(meters)
+															</h3>
+															<input
+																type="range"
+																min="500"
+																max="5000"
+																step="100"
+																value={
+																	dimension
+																}
+																onChange={e =>
+																	setDimension(
+																		e.target
+																			.value
+																	)
+																}
+																className="appearance-none w-full h-3 bg-gray-300 rounded-full focus:outline-none"
+															/>
+															<span className="block text-center text-sm text-gray-600">
+																{dimension}{' '}
+																meters
+															</span>
+														</div>
+
+														{/* Warning Message */}
+														<p className="text-center text-sm text-red-600">
+															Generating data may
+															take up to 5
+															minutes. Location
+															changes are disabled
+															during this process.
+														</p>
+
+														{/* Generate Data Button */}
+														<button
+															className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full shadow-md transition duration-300"
+															onClick={() => {
+																setWantData(
+																	true
+																);
+																setGenerateDataButtonClicked(
+																	true
+																);
+																setShowGallery(
+																	true
+																);
+															}}
+															disabled={
+																generateDataButtonClicked
+															}>
+															Generate Data
+														</button>
+													</div>
 												</div>
 											)}
-											{/* Your normal content goes here */}
-											<div className="flex items-center mb-4">
-												{/* Other content */}
-											</div>
 										</div>
 
-										<SatelliteImageGallery
-											data={data}
-											selectedSatellites={
-												selectedSatellites
-											}
-										/>
+										{/* Conditionally render SatelliteImageGallery */}
+										{showGallery && (
+											<SatelliteImageGallery
+												data={data}
+												selectedSatellites={
+													selectedSatellites
+												}
+											/>
+										)}
 									</>
 								)}
 							</>

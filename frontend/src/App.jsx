@@ -222,9 +222,9 @@ const App = () => {
 							</h1>
 							<div className="flex items-center gap-x-4">
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 										activeTab === 'AcquisitionDates'
-											? 'bg-blue-700'
+											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
 									onClick={() =>
@@ -233,18 +233,18 @@ const App = () => {
 									Turn On Notifications
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 										activeTab === 'gallery'
-											? 'bg-blue-700'
+											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
 									onClick={() => setActiveTab('gallery')}>
 									Request Data
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 										activeTab === 'SatelliteCalendar'
-											? 'bg-blue-700'
+											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
 									onClick={() =>
@@ -253,9 +253,9 @@ const App = () => {
 									Satellite Calendar
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'Date'
-											? 'bg-blue-700'
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+										activeTab === 'Dataa'
+											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
 									onClick={() => setActiveTab('Dataa')}>
@@ -266,8 +266,8 @@ const App = () => {
 								className={`${
 									wantData && data.length === 0
 										? 'bg-red-600 hover:bg-red-700'
-										: 'bg-blue-600 hover:bg-blue-700'
-								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md`}
+										: 'bg-blue-600 hover:bg-blue-800'
+								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md`}
 								onClick={() => {
 									setShowOlderNavBar(true);
 									setShowCanvas(false);

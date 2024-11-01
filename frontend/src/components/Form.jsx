@@ -8,53 +8,47 @@ import 'react-phone-number-input/style.css';
 const NotificationSignupPage = ({ long, lat, calendarData }) => {
 	const [activeTab, setActiveTab] = useState('realtime');
 
-	const renderTabs = () => {
-		return (
-			<div className="tabs flex mb-4">
-				<button
-					className={`tab flex-1 py-2 px-4 text-center rounded-t-lg ${
-						activeTab === 'realtime'
-							? 'bg-white text-black shadow-md'
-							: 'bg-gray-200 text-gray-600'
-					}`}
-					onClick={() => setActiveTab('realtime')}>
-					Realtime Notification
-				</button>
-				<button
-					className={`tab flex-1 py-2 px-4 text-center rounded-t-lg ${
-						activeTab === 'whatsapp'
-							? 'bg-white text-black shadow-md'
-							: 'bg-gray-200 text-gray-600'
-					}`}
-					onClick={() => setActiveTab('whatsapp')}>
-					WhatsApp SR-bot
-				</button>
-			</div>
-		);
-	};
-
-	const renderContent = () => {
-		if (activeTab === 'realtime') {
-			return (
-				<RealtimeNotificationForm
-					long={long}
-					lat={lat}
-				/>
-			);
-		} else if (activeTab === 'whatsapp') {
-			return <WhatsAppSRTutorial />;
-		}
-	};
+	const tabs = [
+		{ name: 'Realtime Notification', value: 'realtime' },
+		{ name: 'WhatsApp SR-bot', value: 'whatsapp' },
+	];
 
 	return (
-		<div className="notification-signup-page h-full p-4">
-			{renderTabs()}
-			<div className="content bg-white p-4 rounded-lg shadow-lg">
-				{renderContent()}
+		<div className="notification-signup-page min-h-screen bg-gray-100 p-4">
+			<div className="max-w-3xl mx-auto">
+				<div className="bg-white rounded-lg shadow-lg">
+					{/* Tab Navigation */}
+					<nav className="flex">
+						{tabs.map(tab => (
+							<button
+								key={tab.value}
+								onClick={() => setActiveTab(tab.value)}
+								className={`flex-1 text-center py-4 px-6 font-medium ${
+									activeTab === tab.value
+										? 'border-b-2 border-blue-600 text-blue-600'
+										: 'text-gray-600 hover:text-blue-600'
+								}`}>
+								{tab.name}
+							</button>
+						))}
+					</nav>
+
+					{/* Tab Content */}
+					<div className="p-6 md:p-8">
+						{activeTab === 'realtime' && (
+							<RealtimeNotificationForm
+								long={long}
+								lat={lat}
+							/>
+						)}
+						{activeTab === 'whatsapp' && <WhatsAppSRTutorial />}
+					</div>
+				</div>
 			</div>
 		</div>
 	);
 };
+
 const RealtimeNotificationForm = ({ long, lat }) => {
 	const {
 		register,
@@ -65,154 +59,143 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 	} = useForm();
 
 	const onSubmit = async data => {
-		// const fullMobileNumber = data.mobile;
-		// // Check if the mobile number already exists
-		// const q = query(
-		// 	collection(db, 'users'),
-		// 	where('mobile', '==', fullMobileNumber)
-		// );
-		// const querySnapshot = await getDocs(q);
-		// if (!querySnapshot.empty) {
-		// 	setError('mobile', {
-		// 		type: 'manual',
-		// 		message: 'This mobile number is already registered.',
-		// 	});
-		// 	return;
-		// }
-		// try {
-		// 	await addDoc(collection(db, 'users'), {
-		// 		name: data.name,
-		// 		email: data.email,
-		// 		mobile: fullMobileNumber,
-		// 		lt: lat,
-		// 		ln: long,
-		// 		leadTimeDays: data.leadTimeDays,
-		// 		leadTimeHours: data.leadTimeHours,
-		// 	});
-		// 	console.log('Document successfully written!');
-		// 	reset();
-		// } catch (error) {
-		// 	console.error('Error adding document: ', error);
-		// 	setError('submit', {
-		// 		type: 'manual',
-		// 		message: 'Error adding user. Please try again.',
-		// 	});
-		// }
+		// Form submission logic here
 	};
 
 	return (
 		<form
 			onSubmit={handleSubmit(onSubmit)}
-			className="max-w-md mx-auto p-4 bg-white shadow-md rounded-lg">
-			<h2 className="text-xl font-bold mb-4">
-				Sign up for SMS and email notifications, and get notified at a
-				specified lead time before the overpass of the satellite for
-				your locked location.
+			className="space-y-6">
+			<h2 className="text-2xl font-semibold text-gray-800 text-center">
+				Sign Up for Notifications
 			</h2>
+			<p className="text-gray-600 text-center">
+				Get notified before the satellite overpass at your location.
+			</p>
 			{errors.submit && (
-				<p className="text-red-500">{errors.submit.message}</p>
+				<p className="text-red-600 text-center">
+					{errors.submit.message}
+				</p>
 			)}
-			<div className="mb-4">
-				<label className="block mb-2 text-gray-700">Name</label>
-				<input
-					type="text"
-					{...register('name', { required: 'Name is required' })}
-					className={`border rounded px-3 py-2 w-full ${
-						errors.name ? 'border-red-500' : ''
-					}`}
-				/>
-				{errors.name && (
-					<p className="text-red-500">{errors.name.message}</p>
-				)}
-			</div>
-			<div className="mb-4">
-				<label className="block mb-2 text-gray-700">Email</label>
-				<input
-					type="email"
-					{...register('email', { required: 'Email is required' })}
-					className={`border rounded px-3 py-2 w-full ${
-						errors.email ? 'border-red-500' : ''
-					}`}
-				/>
-				{errors.email && (
-					<p className="text-red-500">{errors.email.message}</p>
-				)}
-			</div>
-			<div className="mb-4">
-				<label className="block mb-2 text-gray-700">
-					Mobile (for SMS notifications outside of the US)
-				</label>
-				<PhoneInput
-					international
-					defaultCountry="IN"
-					{...register(
-						'mobile (for SMS notifications outside of the US)',
-						{
-							required: 'Mobile number is required',
-						}
+			<div className="space-y-4">
+				{/* Name Field */}
+				<div>
+					<label className="block mb-1 text-gray-700">Name</label>
+					<input
+						type="text"
+						{...register('name', { required: 'Name is required' })}
+						className={`border ${
+							errors.name ? 'border-red-500' : 'border-gray-300'
+						} rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+						placeholder="Your Name"
+					/>
+					{errors.name && (
+						<p className="text-red-600 text-sm mt-1">
+							{errors.name.message}
+						</p>
 					)}
-					className={`border rounded px-3 py-2 w-full ${
-						errors.mobile ? 'border-red-500' : ''
-					}`}
-				/>
-				{errors.mobile && (
-					<p className="text-red-500">{errors.mobile.message}</p>
-				)}
-			</div>
-			<div className="mb-4">
-				<label className="block mb-2 text-gray-700">
-					Lead Time for Notification
-				</label>
-				<div className="flex space-x-4">
-					<div>
-						<header className="text-gray-700 text-sm font-bold">
-							Days
-						</header>
-						<input
-							type="number"
-							min="0"
-							max="2"
-							{...register('leadTimeDays', {
-								required: 'Days are required',
-							})}
-							className={`border rounded px-3 py-2 w-full ${
-								errors.leadTimeDays ? 'border-red-500' : ''
-							}`}
-							placeholder="Days"
-						/>
-						{errors.leadTimeDays && (
-							<p className="text-red-500">
-								{errors.leadTimeDays.message}
-							</p>
-						)}
+				</div>
+				{/* Email Field */}
+				<div>
+					<label className="block mb-1 text-gray-700">Email</label>
+					<input
+						type="email"
+						{...register('email', {
+							required: 'Email is required',
+						})}
+						className={`border ${
+							errors.email ? 'border-red-500' : 'border-gray-300'
+						} rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+						placeholder="you@example.com"
+					/>
+					{errors.email && (
+						<p className="text-red-600 text-sm mt-1">
+							{errors.email.message}
+						</p>
+					)}
+				</div>
+				{/* Mobile Field */}
+				<div>
+					<label className="block mb-1 text-gray-700">
+						Mobile Number
+						<span className="text-sm text-gray-500">
+							{' '}
+							(for SMS notifications)
+						</span>
+					</label>
+					<PhoneInput
+						international
+						defaultCountry="IN"
+						{...register('mobile', {
+							required: 'Mobile number is required',
+						})}
+						className={`border ${
+							errors.mobile ? 'border-red-500' : 'border-gray-300'
+						} rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+					/>
+					{errors.mobile && (
+						<p className="text-red-600 text-sm mt-1">
+							{errors.mobile.message}
+						</p>
+					)}
+				</div>
+				{/* Lead Time Fields */}
+				<div>
+					<label className="block mb-1 text-gray-700">
+						Lead Time for Notification
+					</label>
+					<div className="flex space-x-4">
+						<div className="w-1/2">
+							<input
+								type="number"
+								min="0"
+								max="2"
+								{...register('leadTimeDays', {
+									required: 'Days are required',
+								})}
+								className={`border ${
+									errors.leadTimeDays
+										? 'border-red-500'
+										: 'border-gray-300'
+								} rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+								placeholder="Days"
+							/>
+							{errors.leadTimeDays && (
+								<p className="text-red-600 text-sm mt-1">
+									{errors.leadTimeDays.message}
+								</p>
+							)}
+						</div>
+						<div className="w-1/2">
+							<input
+								type="number"
+								min="0"
+								max="24"
+								{...register('leadTimeHours', {
+									required: 'Hours are required',
+								})}
+								className={`border ${
+									errors.leadTimeHours
+										? 'border-red-500'
+										: 'border-gray-300'
+								} rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500`}
+								placeholder="Hours"
+							/>
+							{errors.leadTimeHours && (
+								<p className="text-red-600 text-sm mt-1">
+									{errors.leadTimeHours.message}
+								</p>
+							)}
+						</div>
 					</div>
-					<div>
-						<header className="text-gray-700 text-sm font-bold">
-							Hours
-						</header>
-						<input
-							type="number"
-							min="0"
-							max="24"
-							{...register('leadTimeHours', {
-								required: 'Hours are required',
-							})}
-							className={`border rounded px-3 py-2 w-full ${
-								errors.leadTimeHours ? 'border-red-500' : ''
-							}`}
-							placeholder="Hours"
-						/>
-						{errors.leadTimeHours && (
-							<p className="text-red-500">
-								{errors.leadTimeHours.message}
-							</p>
-						)}
-					</div>
+					<p className="text-sm text-gray-500 mt-2">
+						Set how much time in advance you want to be notified.
+					</p>
 				</div>
 			</div>
 			<button
 				type="submit"
-				className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+				className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-full shadow-md transition duration-300">
 				Submit
 			</button>
 		</form>
@@ -221,61 +204,75 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 
 const WhatsAppSRTutorial = () => {
 	return (
-		<div className="whatsapp-sr-tutorial p-4 bg-white shadow-md rounded-lg flex flex-col space-y-4">
-			<div className="w-full flex justify-center">
-				<h2 className="text-3xl font-bold mb-4">
-					WhatsApp SR-bot Tutorial
-				</h2>
-			</div>
-			<div className="w-full flex justify-center">
-				<h3 className="text-2xl font-bold mb-2">What is SR-BOT?</h3>
-			</div>
-			<div className="w-full flex justify-center">
-				<p className="mb-4">
-					SR-BOT is a cutting-edge conversational assistant that is
-					available on your WhatsApp for more than just timely
-					notifications of satellite overpasses. With SR-BOT, you can
-					ask about SR data for a particular location, know about the
-					next satellite overpass, and even receive SR data right in
-					your WhatsApp inbox. It's a powerful tool that allows you to
-					get the information you need quickly and easily.
+		<div className="space-y-8">
+			<h2 className="text-2xl font-semibold text-gray-800 text-center">
+				WhatsApp SR-BOT Tutorial
+			</h2>
+			<div className="space-y-4">
+				<h3 className="text-xl font-medium text-gray-700">
+					What is SR-BOT?
+				</h3>
+				<p className="text-gray-700 leading-relaxed">
+					SR-BOT is an advanced conversational assistant available on
+					WhatsApp. Beyond timely notifications of satellite
+					overpasses, you can inquire about SR data for specific
+					locations, upcoming satellite passes, and even receive SR
+					data directly in your WhatsApp inbox. It's a powerful tool
+					designed to provide you with quick and easy access to the
+					information you need.
 				</p>
 			</div>
-			<div className="flex space-x-4">
-				<div className="w-1/2">
-					<h3 className="text-2xl font-bold mb-2">Method 1</h3>
-					<ol className="list-decimal list-inside space-y-2">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+				{/* Method 1 */}
+				<div className="space-y-4">
+					<h3 className="text-lg font-medium text-gray-700">
+						Method 1: Join via Message
+					</h3>
+					<ol className="list-decimal list-inside space-y-2 text-gray-700">
 						<li>
-							Save the number <strong>+1 415 523 8886</strong> to
-							your contacts.
+							Save the number{' '}
+							<span className="font-medium text-blue-600">
+								+1 415 523 8886
+							</span>{' '}
+							to your contacts.
 						</li>
 						<li>
-							Send the message <strong>"join own-already"</strong>{' '}
+							Send the message{' '}
+							<span className="font-medium text-blue-600">
+								join own-already
+							</span>{' '}
 							to the number on WhatsApp.
 						</li>
 						<li>
-							You will receive a confirmation message indicating
-							that you have successfully connected to SR-BOT.
+							You'll receive a confirmation message indicating a
+							successful connection to SR-BOT.
 						</li>
 						<li>
-							Then, you will receive further instructions on how
-							to use SR-BOT directly in WhatsApp.
+							Follow the instructions provided to start using
+							SR-BOT.
 						</li>
 					</ol>
 				</div>
-				<div className="w-1/2">
-					<h3 className="text-2xl font-bold mb-2">Method 2</h3>
-					<img
-						src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2033%2033%22%20shape-rendering%3D%22crispEdges%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M0%200h33v33H0z%22%2F%3E%3Cpath%20stroke%3D%22%23000000%22%20d%3D%22M0%200.5h7m1%200h2m2%200h6m1%200h1m3%200h2m1%200h7M0%201.5h1m5%200h1m1%200h1m2%200h3m1%200h1m2%200h1m1%200h1m2%200h2m1%200h1m5%200h1M0%202.5h1m1%200h3m1%200h1m2%200h1m2%200h1m4%200h1m1%200h1m1%200h4m1%200h1m1%200h3m1%200h1M0%203.5h1m1%200h3m1%200h1m1%200h2m2%200h1m1%200h3m2%200h2m1%200h3m1%200h1m1%200h3m1%200h1M0%204.5h1m1%200h3m1%200h1m2%200h1m3%200h2m2%200h1m2%200h5m1%200h1m1%200h3m1%200h1M0%205.5h1m5%200h1m4%200h2m1%200h1m4%200h5m2%200h1m5%200h1M0%206.5h7m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h7M8%207.5h3m1%200h3m2%200h1m2%200h1m1%200h1M0%208.5h1m1%200h2m1%200h3m2%200h1m2%200h2m2%200h3m2%200h1m3%200h1m2%200h1m1%200h2M1%209.5h1m1%200h3m1%200h3m1%200h1m2%200h3m3%200h7m2%200h2m1%200h1M0%2010.5h1m1%200h1m2%200h7m2%200h2m1%200h1m1%200h3m1%200h2m2%200h3m1%200h2M0%2011.5h5m4%200h1m1%200h1m1%200h4m1%200h1m3%200h1m1%200h4m1%200h1m1%200h2M1%2012.5h2m3%200h1m2%200h2m1%200h1m5%200h2m1%200h1m2%200h3m2%200h1m2%200h1M1%2013.5h1m3%200h1m3%200h1m3%200h1m2%200h1m1%200h1m4%200h2m1%200h2m3%200h1M3%2014.5h1m2%200h5m1%200h1m2%200h4m3%200h2m4%200h1M0%2015.5h1m3%200h1m3%200h1m1%200h4m2%200h6m1%200h4m1%200h3M0%2016.5h1m1%200h9m1%200h2m1%200h2m1%200h4m3%200h2m1%200h3M0%2017.5h2m1%200h3m2%200h3m1%200h1m2%200h1m1%200h1m1%200h8m1%200h2m1%200h1M0%2018.5h1m1%200h1m1%200h4m1%200h1m2%200h4m1%200h1m4%200h1m5%200h1m1%200h2M0%2019.5h2m5%200h2m1%200h2m2%200h1m5%200h2m1%200h2m2%200h2m3%200h1M0%2020.5h1m2%200h1m2%200h2m1%200h7m2%200h1m1%200h1m2%200h1m2%200h5m1%200h1M0%2021.5h4m4%200h2m3%200h1m1%200h1m1%200h2m6%200h1m2%200h1m1%200h1m1%200h1M3%2022.5h4m1%200h1m4%200h1m2%200h2m4%200h1m3%200h1m1%200h2m1%200h2M1%2023.5h3m6%200h1m1%200h1m1%200h1m1%200h2m1%200h1m1%200h2m1%200h1m2%200h1m1%200h4M0%2024.5h1m1%200h1m1%200h5m1%200h1m1%200h1m2%200h1m4%200h2m2%200h9M8%2025.5h1m1%200h1m1%200h1m2%200h3m2%200h1m2%200h2m3%200h2m1%200h2M0%2026.5h7m1%200h3m1%200h1m1%200h3m2%200h1m2%200h3m1%200h1m1%200h1m3%200h1M0%2027.5h1m5%200h1m1%200h1m1%200h3m1%200h2m3%200h1m1%200h4m3%200h1m1%200h1m1%200h1M0%2028.5h1m1%200h3m1%200h1m2%200h2m3%200h1m2%200h1m1%200h2m2%200h6m1%200h1m1%200h1M0%2029.5h1m1%200h3m1%200h1m1%200h2m2%200h1m4%200h5m2%200h2m3%200h3M0%2030.5h1m1%200h3m1%200h1m1%200h1m1%200h3m4%200h3m1%200h3m2%200h2M0%2031.5h1m5%200h1m3%200h1m1%200h5m2%200h1m1%200h4m3%200h1m1%200h1m1%200h1M0%2032.5h7m1%200h2m2%200h2m1%200h1m1%200h2m3%200h4m4%200h1%22%2F%3E%3C%2Fsvg%3E"
-						alt="QR Code for SR-BOT"
-						className="w-3/5 mx-auto"
-					/>
-					<p className="mt-4">
-						Scan the QR code above to connect to SR-BOT on WhatsApp.
+				{/* Method 2 */}
+				<div className="space-y-4">
+					<h3 className="text-lg font-medium text-gray-700">
+						Method 2: Scan QR Code
+					</h3>
+					<div className="flex justify-center">
+						<img
+							src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2033%2033%22%20shape-rendering%3D%22crispEdges%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M0%200h33v33H0z%22%2F%3E%3Cpath%20stroke%3D%22%23000000%22%20d%3D%22M0%200.5h7m1%200h2m2%200h6m1%200h1m3%200h2m1%200h7M0%201.5h1m5%200h1m1%200h1m2%200h3m1%200h1m2%200h1m1%200h1m2%200h2m1%200h1m5%200h1M0%202.5h1m1%200h3m1%200h1m2%200h1m2%200h1m4%200h1m1%200h1m1%200h4m1%200h1m1%200h3m1%200h1M0%203.5h1m1%200h3m1%200h1m1%200h2m2%200h1m1%200h3m2%200h2m1%200h3m1%200h1m1%200h3m1%200h1M0%204.5h1m1%200h3m1%200h1m2%200h1m3%200h2m2%200h1m2%200h5m1%200h1m1%200h3m1%200h1M0%205.5h1m5%200h1m4%200h2m1%200h1m4%200h5m2%200h1m5%200h1M0%206.5h7m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h1m1%200h7M8%207.5h3m1%200h3m2%200h1m2%200h1m1%200h1M0%208.5h1m1%200h2m1%200h3m2%200h1m2%200h2m2%200h3m2%200h1m3%200h1m2%200h1m1%200h2M1%209.5h1m1%200h3m1%200h3m1%200h1m2%200h3m3%200h7m2%200h2m1%200h1M0%2010.5h1m1%200h1m2%200h7m2%200h2m1%200h1m1%200h3m1%200h2m2%200h3m1%200h2M0%2011.5h5m4%200h1m1%200h1m1%200h4m1%200h1m3%200h1m1%200h4m1%200h1m1%200h2M1%2012.5h2m3%200h1m2%200h2m1%200h1m5%200h2m1%200h1m2%200h3m2%200h1m2%200h1M1%2013.5h1m3%200h1m3%200h1m3%200h1m2%200h1m1%200h1m4%200h2m1%200h2m3%200h1M3%2014.5h1m2%200h5m1%200h1m2%200h4m3%200h2m4%200h1M0%2015.5h1m3%200h1m3%200h1m1%200h4m2%200h6m1%200h4m1%200h3M0%2016.5h1m1%200h9m1%200h2m1%200h2m1%200h4m3%200h2m1%200h3M0%2017.5h2m1%200h3m2%200h3m1%200h1m2%200h1m1%200h1m1%200h8m1%200h2m1%200h1M0%2018.5h1m1%200h1m1%200h4m1%200h1m2%200h4m1%200h1m4%200h1m5%200h1m1%200h2M0%2019.5h2m5%200h2m1%200h2m2%200h1m5%200h2m1%200h2m2%200h2m3%200h1M0%2020.5h1m2%200h1m2%200h2m1%200h7m2%200h1m1%200h1m2%200h1m2%200h5m1%200h1M0%2021.5h4m4%200h2m3%200h1m1%200h1m1%200h2m6%200h1m2%200h1m1%200h1m1%200h1M3%2022.5h4m1%200h1m4%200h1m2%200h2m4%200h1m3%200h1m1%200h2m1%200h2M1%2023.5h3m6%200h1m1%200h1m1%200h1m1%200h2m1%200h1m1%200h2m1%200h1m2%200h1m1%200h4M0%2024.5h1m1%200h1m1%200h5m1%200h1m1%200h1m2%200h1m4%200h2m2%200h9M8%2025.5h1m1%200h1m1%200h1m2%200h3m2%200h1m2%200h2m3%200h2m1%200h2M0%2026.5h7m1%200h3m1%200h1m1%200h3m2%200h1m2%200h3m1%200h1m1%200h1m3%200h1M0%2027.5h1m5%200h1m1%200h1m1%200h3m1%200h2m3%200h1m1%200h4m3%200h1m1%200h1m1%200h1M0%2028.5h1m1%200h3m1%200h1m2%200h2m3%200h1m2%200h1m1%200h2m2%200h6m1%200h1m1%200h1M0%2029.5h1m1%200h3m1%200h1m1%200h2m2%200h1m4%200h5m2%200h2m3%200h3M0%2030.5h1m1%200h3m1%200h1m1%200h1m1%200h3m4%200h3m1%200h3m2%200h2M0%2031.5h1m5%200h1m3%200h1m1%200h5m2%200h1m1%200h4m3%200h1m1%200h1m1%200h1M0%2032.5h7m1%200h2m2%200h2m1%200h1m1%200h2m3%200h4m4%200h1%22%2F%3E%3C%2Fsvg%3E"
+							alt="QR Code for SR-BOT"
+							className="w-3/5 mx-auto"
+						/>
+					</div>
+					<p className="text-gray-700 text-center">
+						Scan the QR code above to connect with SR-BOT on
+						WhatsApp.
 					</p>
 				</div>
 			</div>
 		</div>
 	);
 };
+
 export default NotificationSignupPage;

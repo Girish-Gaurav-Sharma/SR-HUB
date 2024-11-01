@@ -175,33 +175,11 @@ const Dataa = () => {
 					key={index}
 					className="image-item bg-white p-4 rounded-lg shadow-lg">
 					<div
-<<<<<<< HEAD
-						key={index}
-						className="image-item bg-white p-4 rounded-lg shadow-lg">
-						<div
-							className={`flex items-center justify-center w-full ${bandColors[bandName] || 'bg-gray-400'
-								} rounded-full p-4 mb-2`}>
-							<h3 className="text-xl font-semibold text-black">
-								{bandName}
-							</h3>
-						</div>
-						<img
-							src={bandData.url}
-							alt={`${bandName} image`}
-							className="w-full h-auto mb-2 rounded"
-						/>
-						<p>
-							<span className="font-semibold">Average: </span>
-							{bandData.average}
-						</p>
-=======
-						className={`flex items-center justify-center ${
-							bandColors[bandName] || 'bg-gray-400'
-						} rounded-full px-4 py-2 mb-2`}>
+						className={`flex items-center justify-center ${bandColors[bandName] || 'bg-gray-400'
+							} rounded-full px-4 py-2 mb-2`}>
 						<h3 className="text-lg font-semibold text-black">
 							{bandName}
 						</h3>
->>>>>>> refs/remotes/origin/master
 					</div>
 					<img
 						src={bandData.url}
@@ -236,32 +214,7 @@ const Dataa = () => {
 
 	return (
 		<div className="satellite-data-display h-full">
-<<<<<<< HEAD
-			<div className="tabs">
-				<ul className="flex border-b">
-					{satellites.map(satellite => (
-						<li
-							key={satellite}
-							className={`mr-1 ${selectedSatellite === satellite
-								? 'border-blue-500'
-								: ''
-								}`}>
-							<button
-								className={`bg-white inline-block py-2 px-4 font-semibold ${selectedSatellite === satellite
-									? 'text-blue-700'
-									: 'text-blue-500 hover:text-blue-800'
-									}`}
-								onClick={() => setSelectedSatellite(satellite)}>
-								{satellite}
-							</button>
-						</li>
-					))}
-				</ul>
-			</div>
-			<div className="flex h-full">
-=======
 			<div className="flex flex-col md:flex-row h-full">
->>>>>>> refs/remotes/origin/master
 				{/* Left Column - Metadata */}
 				<div className="w-full md:w-1/3 md:pr-4 mb-4 md:mb-0">
 					<div className="md:sticky md:top-0">

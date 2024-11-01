@@ -8,6 +8,7 @@ import Download from './components/download';
 import ThreeMonthCalendar from './components/Calanderview';
 import Dataa from './components/Date';
 import NotificationSignupPage from './components/Form';
+import Tutorial from './components/Tutorial';
 import SatelliteImageGallery from './components/databasmonth';
 //-------------------------------------------------------------------------------------
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
 	const [activeTab, setActiveTab] = useState('AcquisitionDates');
 	const [showNewNavBar, setShowNewNavBar] = useState(false);
 	const [calendarData, setCalendarData] = useState([]);
+	const [showTutorial, setShowTutorial] = useState(true);
 	const startDateValue = new Date().toISOString().split('T')[0];
 	const endDateValue = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
 		.toISOString()
@@ -163,6 +165,7 @@ const App = () => {
 	//-------------------------------------------------------------------------------------
 	return (
 		<div className="relative flex flex-col h-screen">
+			{showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
 			{showOlderNavBar && (
 				<nav className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
 					<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
@@ -209,52 +212,47 @@ const App = () => {
 							</h1>
 							<div className="flex items-center gap-x-4">
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'AcquisitionDates'
-											? 'bg-blue-700'
-											: ''
-									}`}
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'AcquisitionDates'
+										? 'bg-blue-700'
+										: ''
+										}`}
 									onClick={() =>
 										setActiveTab('AcquisitionDates')
 									}>
 									Turn On Notifications
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'gallery'
-											? 'bg-blue-700'
-											: ''
-									}`}
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'gallery'
+										? 'bg-blue-700'
+										: ''
+										}`}
 									onClick={() => setActiveTab('gallery')}>
 									30 Days Database
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'SatelliteCalendar'
-											? 'bg-blue-700'
-											: ''
-									}`}
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'SatelliteCalendar'
+										? 'bg-blue-700'
+										: ''
+										}`}
 									onClick={() =>
 										setActiveTab('SatelliteCalendar')
 									}>
 									Satellite Calendar
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${
-										activeTab === 'Date'
-											? 'bg-blue-700'
-											: ''
-									}`}
+									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'Date'
+										? 'bg-blue-700'
+										: ''
+										}`}
 									onClick={() => setActiveTab('Dataa')}>
 									Complete SR Profile
 								</button>
 							</div>
 							<button
-								className={`${
-									wantData && data.length === 0
-										? 'bg-red-600 hover:bg-red-700'
-										: 'bg-blue-600 hover:bg-blue-700'
-								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md`}
+								className={`${wantData && data.length === 0
+									? 'bg-red-600 hover:bg-red-700'
+									: 'bg-blue-600 hover:bg-blue-700'
+									} text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md`}
 								onClick={() => {
 									setShowOlderNavBar(true);
 									setShowCanvas(false);

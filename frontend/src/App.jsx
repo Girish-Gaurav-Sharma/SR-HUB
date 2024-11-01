@@ -194,9 +194,13 @@ const App = () => {
 				<Tutorial onClose={() => setShowTutorial(false)} />
 			)}
 			{showOlderNavBar && (
-				<nav className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
-					<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
-					<div className="flex items-center gap-x-4">
+				<nav className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex flex-col md:flex-row items-center justify-between p-4 h-auto md:h-16 shadow-md rounded-3xl mt-3 mx-2 md:mx-5">
+					<h1 className="flex items-center justify-center text-3xl p-1 md:text-2xl font-bold mb-2 md:mb-0 ml-0 md:ml-4">
+						<span className="bg-white/60 rounded-full border px-4 py-2">
+							SR-HUB
+						</span>
+					</h1>
+					<div className="flex flex-col md:flex-row items-center gap-y-2 md:gap-x-4 w-full md:w-auto">
 						<Search
 							onLocationSelected={handleLocationChange}
 							searchQuery={searchQuery}
@@ -210,7 +214,7 @@ const App = () => {
 						/>
 					</div>
 					<button
-						className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+						className="w-full md:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-2 md:mt-0"
 						onClick={() => {
 							setShowOlderNavBar(false);
 							setShowCanvas(true);

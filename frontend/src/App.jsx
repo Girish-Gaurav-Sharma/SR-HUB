@@ -10,6 +10,14 @@ import Dataa from './components/Date';
 import NotificationSignupPage from './components/Form';
 import Tutorial from './components/Tutorial';
 import SatelliteImageGallery from './components/databasmonth';
+import {
+	FaSatellite,
+	FaCloud,
+	FaArrowsAltH,
+	FaExclamationTriangle,
+	FaPlay,
+} from 'react-icons/fa';
+
 //-------------------------------------------------------------------------------------
 const App = () => {
 	const [showGallery, setShowGallery] = useState(false);
@@ -178,7 +186,9 @@ const App = () => {
 	//-------------------------------------------------------------------------------------
 	return (
 		<div className="relative flex flex-col h-screen">
-			{showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
+			{showTutorial && (
+				<Tutorial onClose={() => setShowTutorial(false)} />
+			)}
 			{showOlderNavBar && (
 				<nav className="absolute inset-x-0 top-0 z-20 backdrop-blur-sm bg-white/30 text-black flex items-center justify-between p-4 h-16 shadow-md rounded-3xl mt-3 mx-5">
 					<h1 className="text-2xl ml-4 font-bold">SR-HUB</h1>
@@ -225,68 +235,52 @@ const App = () => {
 							</h1>
 							<div className="flex items-center gap-x-4">
 								<button
-
-									
-
 									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 										activeTab === 'AcquisitionDates'
 											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
-
 									onClick={() =>
 										setActiveTab('AcquisitionDates')
 									}>
 									Turn On Notifications
 								</button>
 								<button
-
-								
-
 									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 										activeTab === 'gallery'
 											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
-
 									onClick={() => setActiveTab('gallery')}>
 									Request Data
 								</button>
 								<button
-
-									
-
 									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 										activeTab === 'SatelliteCalendar'
 											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
-
 									onClick={() =>
 										setActiveTab('SatelliteCalendar')
 									}>
 									Satellite Calendar
 								</button>
 								<button
-
 									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 										activeTab === 'Dataa'
 											? 'bg-blue-800 border border-blue-950'
 											: ''
 									}`}
-
 									onClick={() => setActiveTab('Dataa')}>
 									Complete SR Profile
 								</button>
 							</div>
 							<button
-
 								className={`${
 									wantData && data.length === 0
 										? 'bg-red-600 hover:bg-red-700'
 										: 'bg-blue-600 hover:bg-blue-800'
 								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md`}
-
 								onClick={() => {
 									setShowOlderNavBar(true);
 									setShowCanvas(false);
@@ -340,118 +334,169 @@ const App = () => {
 											{/* Full screen overlay */}
 											{!wantData && (
 												<div className="inset-0 flex items-center justify-center bg-transparent z-50">
-													<div className="bg-white rounded-lg shadow-lg p-6 md:p-8 w-full max-w-lg space-y-6">
-														<h2 className="text-2xl font-semibold text-gray-800 text-center">
+													<div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-lg space-y-6">
+														<h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center">
 															Configure Your Data
 															Selection
 														</h2>
 
 														{/* Database Selection */}
-														<div className="space-y-4 border-t border-b py-4 px-2">
-															<h3 className="text-lg font-medium text-gray-700">
+														<div className="space-y-4">
+															<h3 className="text-lg font-medium text-gray-800 mb-4">
 																Select Databases
 															</h3>
-															<div className="grid grid-cols-2 gap-3">
+															<div className="space-y-2">
 																{[
-																	'Landsat 8',
-																	'Landsat 9',
-																	'Sentinel-2A',
-																	'Sentinel-2B',
-																	'HLS',
+																	{
+																		name: 'Landsat 8',
+																		icon: (
+																			<FaSatellite className="text-blue-500" />
+																		),
+																	},
+																	{
+																		name: 'Landsat 9',
+																		icon: (
+																			<FaSatellite className="text-blue-500" />
+																		),
+																	},
+																	{
+																		name: 'Sentinel-2A',
+																		icon: (
+																			<FaSatellite className="text-green-500" />
+																		),
+																	},
+																	{
+																		name: 'Sentinel-2B',
+																		icon: (
+																			<FaSatellite className="text-green-500" />
+																		),
+																	},
+																	{
+																		name: 'HLS',
+																		icon: (
+																			<FaSatellite className="text-purple-500" />
+																		),
+																	},
 																].map(
-																	satellite => (
-																		<label
+																	(
+																		satellite,
+																		index
+																	) => (
+																		<div
 																			key={
-																				satellite
+																				index
 																			}
-																			className="flex items-center space-x-2 text-gray-700">
+																			className="flex items-center bg-gray-50 p-4 rounded-lg">
+																			<div className="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md mr-4">
+																				{
+																					satellite.icon
+																				}
+																			</div>
 																			<input
 																				type="checkbox"
 																				value={
-																					satellite
+																					satellite.name
 																				}
 																				onChange={
 																					handleSatelliteSelection
 																				}
-																				className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+																				className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
 																			/>
-																			<span className="text-sm font-medium">
+																			<span className="text-gray-800 font-medium">
 																				{
-																					satellite
+																					satellite.name
 																				}
 																			</span>
-																		</label>
+																		</div>
 																	)
 																)}
 															</div>
 														</div>
 
 														{/* Cloud Cover Slider */}
-														<div className="space-y-2">
-															<h3 className="text-lg font-medium text-gray-700 text-center">
+														<div className="space-y-4">
+															<h3 className="text-lg font-medium text-gray-800 mb-4">
 																Maximum Cloud
 																Cover (%)
 															</h3>
-															<input
-																type="range"
-																min="0"
-																max="100"
-																value={
-																	cloudCover
-																}
-																onChange={e =>
-																	setCloudCover(
-																		e.target
-																			.value
-																	)
-																}
-																className="appearance-none w-full h-3 bg-gray-300 rounded-full focus:outline-none"
-															/>
-															<span className="block text-center text-sm text-gray-600">
-																{cloudCover}%
-															</span>
+															<div className="flex items-center bg-gray-50 p-4 rounded-lg">
+																<div className="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md mr-4">
+																	<FaCloud className="text-blue-500" />
+																</div>
+																<input
+																	type="range"
+																	min="0"
+																	max="100"
+																	value={
+																		cloudCover
+																	}
+																	onChange={e =>
+																		setCloudCover(
+																			e
+																				.target
+																				.value
+																		)
+																	}
+																	className="w-full h-3 bg-gray-300 rounded-full focus:outline-none"
+																/>
+																<span className="text-gray-800 font-medium ml-4">
+																	{cloudCover}
+																	%
+																</span>
+															</div>
 														</div>
 
 														{/* Data Dimension Slider */}
-														<div className="space-y-2">
-															<h3 className="text-lg font-medium text-gray-700 text-center">
+														<div className="space-y-4">
+															<h3 className="text-lg font-medium text-gray-800 mb-4">
 																Data Dimension
 																(meters)
 															</h3>
-															<input
-																type="range"
-																min="500"
-																max="5000"
-																step="100"
-																value={
-																	dimension
-																}
-																onChange={e =>
-																	setDimension(
-																		e.target
-																			.value
-																	)
-																}
-																className="appearance-none w-full h-3 bg-gray-300 rounded-full focus:outline-none"
-															/>
-															<span className="block text-center text-sm text-gray-600">
-																{dimension}{' '}
-																meters
-															</span>
+															<div className="flex items-center bg-gray-50 p-4 rounded-lg">
+																<div className="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md mr-4">
+																	<FaArrowsAltH className="text-blue-500" />
+																</div>
+																<input
+																	type="range"
+																	min="500"
+																	max="5000"
+																	step="100"
+																	value={
+																		dimension
+																	}
+																	onChange={e =>
+																		setDimension(
+																			e
+																				.target
+																				.value
+																		)
+																	}
+																	className="w-full h-3 bg-gray-300 rounded-full focus:outline-none"
+																/>
+																<span className="text-gray-800 font-medium ml-4">
+																	{dimension}{' '}
+																	meters
+																</span>
+															</div>
 														</div>
 
 														{/* Warning Message */}
-														<p className="text-center text-sm text-red-600">
-															Generating data may
-															take up to 5
-															minutes. Location
-															changes are disabled
-															during this process.
-														</p>
+														<div className="bg-yellow-50 p-4 rounded-lg flex items-center">
+															<FaExclamationTriangle className="text-yellow-600 mr-3" />
+															<p className="text-sm text-yellow-800">
+																Generating data
+																may take up to 5
+																minutes.
+																Location changes
+																are disabled
+																during this
+																process.
+															</p>
+														</div>
 
 														{/* Generate Data Button */}
 														<button
-															className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-full shadow-md transition duration-300"
+															className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition duration-300 flex items-center justify-center"
 															onClick={() => {
 																setWantData(
 																	true
@@ -466,6 +511,7 @@ const App = () => {
 															disabled={
 																generateDataButtonClicked
 															}>
+															<FaPlay className="mr-2" />
 															Generate Data
 														</button>
 													</div>

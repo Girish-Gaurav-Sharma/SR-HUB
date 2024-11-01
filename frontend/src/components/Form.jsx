@@ -4,13 +4,31 @@ import { useForm } from 'react-hook-form';
 // import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import {
+	FaBell,
+	FaWhatsapp,
+	FaUser,
+	FaEnvelope,
+	FaMobileAlt,
+	FaClock,
+	FaInfoCircle,
+	FaQrcode,
+} from 'react-icons/fa';
 
 const NotificationSignupPage = ({ long, lat, calendarData }) => {
 	const [activeTab, setActiveTab] = useState('realtime');
 
 	const tabs = [
-		{ name: 'Realtime Notification', value: 'realtime' },
-		{ name: 'WhatsApp SR-bot', value: 'whatsapp' },
+		{
+			name: 'Realtime Notification',
+			value: 'realtime',
+			icon: <FaBell className="text-blue-500" />,
+		},
+		{
+			name: 'WhatsApp SR-BOT',
+			value: 'whatsapp',
+			icon: <FaWhatsapp className="text-green-500" />,
+		},
 	];
 
 	return (
@@ -23,11 +41,12 @@ const NotificationSignupPage = ({ long, lat, calendarData }) => {
 							<button
 								key={tab.value}
 								onClick={() => setActiveTab(tab.value)}
-								className={`flex-1 text-center py-4 px-6 font-medium ${
+								className={`flex-1 flex items-center justify-center py-4 px-6 font-medium ${
 									activeTab === tab.value
 										? 'border-b-2 border-blue-600 text-blue-600'
 										: 'text-gray-600 hover:text-blue-600'
 								}`}>
+								<div className="mr-2">{tab.icon}</div>
 								{tab.name}
 							</button>
 						))}
@@ -80,7 +99,10 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 			<div className="space-y-4">
 				{/* Name Field */}
 				<div>
-					<label className="block mb-1 text-gray-700">Name</label>
+					<label className="block mb-1 text-gray-700 flex items-center">
+						<FaUser className="text-blue-500 mr-2" />
+						Name
+					</label>
 					<input
 						type="text"
 						{...register('name', { required: 'Name is required' })}
@@ -97,7 +119,10 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 				</div>
 				{/* Email Field */}
 				<div>
-					<label className="block mb-1 text-gray-700">Email</label>
+					<label className="block mb-1 text-gray-700 flex items-center">
+						<FaEnvelope className="text-blue-500 mr-2" />
+						Email
+					</label>
 					<input
 						type="email"
 						{...register('email', {
@@ -116,10 +141,10 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 				</div>
 				{/* Mobile Field */}
 				<div>
-					<label className="block mb-1 text-gray-700">
+					<label className="block mb-1 text-gray-700 flex items-center">
+						<FaMobileAlt className="text-blue-500 mr-2" />
 						Mobile Number
-						<span className="text-sm text-gray-500">
-							{' '}
+						<span className="text-sm text-gray-500 ml-1">
 							(for SMS notifications)
 						</span>
 					</label>
@@ -141,7 +166,8 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 				</div>
 				{/* Lead Time Fields */}
 				<div>
-					<label className="block mb-1 text-gray-700">
+					<label className="block mb-1 text-gray-700 flex items-center">
+						<FaClock className="text-blue-500 mr-2" />
 						Lead Time for Notification
 					</label>
 					<div className="flex space-x-4">
@@ -188,7 +214,8 @@ const RealtimeNotificationForm = ({ long, lat }) => {
 							)}
 						</div>
 					</div>
-					<p className="text-sm text-gray-500 mt-2">
+					<p className="text-sm text-gray-500 mt-2 flex items-center">
+						<FaInfoCircle className="text-blue-500 mr-2" />
 						Set how much time in advance you want to be notified.
 					</p>
 				</div>
@@ -209,7 +236,8 @@ const WhatsAppSRTutorial = () => {
 				WhatsApp SR-BOT Tutorial
 			</h2>
 			<div className="space-y-4">
-				<h3 className="text-xl font-medium text-gray-700">
+				<h3 className="text-xl font-medium text-gray-700 flex items-center">
+					<FaInfoCircle className="text-blue-500 mr-2" />
 					What is SR-BOT?
 				</h3>
 				<p className="text-gray-700 leading-relaxed">
@@ -225,7 +253,8 @@ const WhatsAppSRTutorial = () => {
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 				{/* Method 1 */}
 				<div className="space-y-4">
-					<h3 className="text-lg font-medium text-gray-700">
+					<h3 className="text-lg font-medium text-gray-700 flex items-center">
+						<FaEnvelope className="text-green-500 mr-2" />
 						Method 1: Join via Message
 					</h3>
 					<ol className="list-decimal list-inside space-y-2 text-gray-700">
@@ -255,7 +284,8 @@ const WhatsAppSRTutorial = () => {
 				</div>
 				{/* Method 2 */}
 				<div className="space-y-4">
-					<h3 className="text-lg font-medium text-gray-700">
+					<h3 className="text-lg font-medium text-gray-700 flex items-center">
+						<FaQrcode className="text-green-500 mr-2" />
 						Method 2: Scan QR Code
 					</h3>
 					<div className="flex justify-center">

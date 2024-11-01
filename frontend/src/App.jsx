@@ -225,47 +225,68 @@ const App = () => {
 							</h1>
 							<div className="flex items-center gap-x-4">
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'AcquisitionDates'
-										? 'bg-blue-700'
-										: ''
-										}`}
+
+									
+
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+										activeTab === 'AcquisitionDates'
+											? 'bg-blue-800 border border-blue-950'
+											: ''
+									}`}
+
 									onClick={() =>
 										setActiveTab('AcquisitionDates')
 									}>
 									Turn On Notifications
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'gallery'
-										? 'bg-blue-700'
-										: ''
-										}`}
+
+								
+
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+										activeTab === 'gallery'
+											? 'bg-blue-800 border border-blue-950'
+											: ''
+									}`}
+
 									onClick={() => setActiveTab('gallery')}>
 									Request Data
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'SatelliteCalendar'
-										? 'bg-blue-700'
-										: ''
-										}`}
+
+									
+
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+										activeTab === 'SatelliteCalendar'
+											? 'bg-blue-800 border border-blue-950'
+											: ''
+									}`}
+
 									onClick={() =>
 										setActiveTab('SatelliteCalendar')
 									}>
 									Satellite Calendar
 								</button>
 								<button
-									className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md ${activeTab === 'Date'
-										? 'bg-blue-700'
-										: ''
-										}`}
+
+									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+										activeTab === 'Dataa'
+											? 'bg-blue-800 border border-blue-950'
+											: ''
+									}`}
+
 									onClick={() => setActiveTab('Dataa')}>
 									Complete SR Profile
 								</button>
 							</div>
 							<button
-								className={`${wantData && data.length === 0
-									? 'bg-red-600 hover:bg-red-700'
-									: 'bg-blue-600 hover:bg-blue-700'
-									} text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-md`}
+
+								className={`${
+									wantData && data.length === 0
+										? 'bg-red-600 hover:bg-red-700'
+										: 'bg-blue-600 hover:bg-blue-800'
+								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md`}
+
 								onClick={() => {
 									setShowOlderNavBar(true);
 									setShowCanvas(false);
@@ -285,10 +306,21 @@ const App = () => {
 					/>
 
 					<div
-						className="backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto rounded-3xl w-[calc(100vw-6rem)] shadow-xl transition-all duration-300 mt-4"
-						style={{
-							flexGrow: 1,
-						}}>
+						className="
+    backdrop-blur-md
+    bg-white/40
+    text-black
+    p-6
+    overflow-y-auto
+    rounded-3xl
+    w-[calc(100vw-6rem)]
+    max-[799px]:w-full
+    shadow-xl
+    transition-all
+    duration-300
+    mt-4
+  "
+						style={{ flexGrow: 1 }}>
 						{showNewNavBar && (
 							<>
 								{activeTab === 'AcquisitionDates' && (

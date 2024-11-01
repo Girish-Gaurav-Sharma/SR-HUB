@@ -1,6 +1,7 @@
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useState } from 'react';
+
 const ThreeMonthCalendar = ({ dates }) => {
 	const [loading, setLoading] = useState(true);
 
@@ -12,8 +13,7 @@ const ThreeMonthCalendar = ({ dates }) => {
 		}
 	};
 	intervalId = setInterval(checkDates, 100);
-	console.log('Loading:', loading);
-	console.log('dates:', dates);
+
 	const today = new Date();
 	today.setDate(1); // Set to the first day of the month
 	const fourMonthsLater = new Date(
@@ -21,8 +21,6 @@ const ThreeMonthCalendar = ({ dates }) => {
 		today.getMonth() + 5,
 		0 // Set to the last day of the month
 	);
-
-	// Fetch acquisition dates
 
 	// Prepare data for different satellites
 	const Landsat8 =
@@ -84,7 +82,10 @@ const ThreeMonthCalendar = ({ dates }) => {
 
 	// Render
 	return (
-		<div className="flex items-center justify-center gap-24 h-full">
+		<div
+			className={`flex flex-col items-center ${
+				window.innerHeight < 650 ? '' : 'justify-center'
+			} gap-0.5 h-full p-4`}>
 			{loading ? (
 				// Loading animation with message
 				<div className="text-xl font-bold text-blue-600 flex flex-col items-center">
@@ -105,13 +106,14 @@ const ThreeMonthCalendar = ({ dates }) => {
 				</div>
 			) : (
 				<>
-					<div className="flex flex-col gap-6 items-center justify-center">
+					{/* Satellite Labels */}
+					<div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-3xl">
 						{/* Landsat 8 */}
-						<div className="flex items-center justify-between w-[250px] bg-red-400 backdrop-blur-sm rounded-full p-4 shadow-lg">
-							<h3 className="text-lg font-semibold text-black">
-								Landsat 8{' '}
+						<div className="flex flex-col items-center justify-center bg-red-400 backdrop-blur-sm rounded-full p-2 shadow-lg text-sm sm:text-base">
+							<h3 className="font-semibold text-black">
+								Landsat 8
 							</h3>
-							<span className="flex items-center justify-center bg-red-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-sm">
+							<span className="flex items-center justify-center bg-red-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs sm:text-sm mt-1">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="h-4 w-4 mr-1"
@@ -130,11 +132,11 @@ const ThreeMonthCalendar = ({ dates }) => {
 						</div>
 
 						{/* Landsat 9 */}
-						<div className="flex items-center justify-between w-[250px] bg-yellow-400 backdrop-blur-sm rounded-full p-4 shadow-lg">
-							<h3 className="text-lg font-semibold text-black">
-								Landsat 9{' '}
+						<div className="flex flex-col items-center justify-center bg-yellow-400 backdrop-blur-sm rounded-full p-2 shadow-lg text-sm sm:text-base">
+							<h3 className="font-semibold text-black">
+								Landsat 9
 							</h3>
-							<span className="flex items-center justify-center bg-yellow-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-sm">
+							<span className="flex items-center justify-center bg-yellow-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs sm:text-sm mt-1">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="h-4 w-4 mr-1"
@@ -153,11 +155,11 @@ const ThreeMonthCalendar = ({ dates }) => {
 						</div>
 
 						{/* Sentinel 2A */}
-						<div className="flex items-center justify-between w-[250px] bg-green-400 backdrop-blur-sm rounded-full p-4 shadow-lg">
-							<h3 className="text-lg font-semibold text-black">
-								Sentinel 2A{' '}
+						<div className="flex flex-col items-center justify-center bg-green-400 backdrop-blur-sm rounded-full p-2 shadow-lg text-sm sm:text-base">
+							<h3 className="font-semibold text-black">
+								Sentinel 2A
 							</h3>
-							<span className="flex items-center justify-center bg-green-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-sm">
+							<span className="flex items-center justify-center bg-green-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs sm:text-sm mt-1">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="h-4 w-4 mr-1"
@@ -176,11 +178,11 @@ const ThreeMonthCalendar = ({ dates }) => {
 						</div>
 
 						{/* Sentinel 2B */}
-						<div className="flex items-center justify-between w-[250px] bg-blue-400 backdrop-blur-sm rounded-full p-4 shadow-lg">
-							<h3 className="text-lg font-semibold text-black">
-								Sentinel 2B{' '}
+						<div className="flex flex-col items-center justify-center bg-blue-400 backdrop-blur-sm rounded-full p-2 shadow-lg text-sm sm:text-base">
+							<h3 className="font-semibold text-black">
+								Sentinel 2B
 							</h3>
-							<span className="flex items-center justify-center bg-blue-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-sm">
+							<span className="flex items-center justify-center bg-blue-500 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs sm:text-sm mt-1">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="h-4 w-4 mr-1"
@@ -191,7 +193,7 @@ const ThreeMonthCalendar = ({ dates }) => {
 										strokeLinecap="round"
 										strokeLinejoin="round"
 										strokeWidth={2}
-										d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+										d="M12 8v4l3 3m6-3a9 9 9 0 11-18 0 9 9 0 0118 0z"
 									/>
 								</svg>
 								{dates[3]?.timeLocal?.time12Hour || 'N/A'}
@@ -199,46 +201,49 @@ const ThreeMonthCalendar = ({ dates }) => {
 						</div>
 					</div>
 
-					<Calendar
-						minDate={today} // Show from the current date
-						maxDate={fourMonthsLater} // Show up to 4 months later
-						selectable={false}
-						onClickDay={null}
-						view="month"
-						minDetail="month"
-						maxDetail="month"
-						showNeighboringMonth={false}
-						next2Label={null}
-						prev2Label={null}
-						className="rounded-2xl w-3/5 h-auto p-4 bg-white shadow-lg text-center text-black"
-						tileContent={getTileContent}
-						navLabel={({ date, view }) => (
-							<h3 className="text-2xl font-semibold text-blue-600">
-								{date.toLocaleString('default', {
-									month: 'long',
-									year: 'numeric',
-								})}
-							</h3>
-						)}
-						nextLabel={
-							<span className="text-blue-600 text-xl font-bold">
-								{'>'}
-							</span>
-						}
-						prevLabel={
-							<span className="text-blue-600 text-xl font-bold">
-								{'<'}
-							</span>
-						}
-						tileClassName={({ date, view }) => {
-							let classNames =
-								'cursor-default hover:bg-transparent focus:bg-transparent';
-							if (isSameDay(date, new Date())) {
-								classNames += ' bg-blue-100 rounded-lg';
+					{/* Calendar */}
+					<div className="w-full max-w-3xl mt-4">
+						<Calendar
+							minDate={today} // Show from the current date
+							maxDate={fourMonthsLater} // Show up to 4 months later
+							selectable={false}
+							onClickDay={null}
+							view="month"
+							minDetail="month"
+							maxDetail="month"
+							showNeighboringMonth={false}
+							next2Label={null}
+							prev2Label={null}
+							className="rounded-2xl w-full h-auto p-2 sm:p-4 bg-white shadow-lg text-center text-black"
+							tileContent={getTileContent}
+							navLabel={({ date, view }) => (
+								<h3 className="text-xl sm:text-2xl font-semibold text-blue-600">
+									{date.toLocaleString('default', {
+										month: 'long',
+										year: 'numeric',
+									})}
+								</h3>
+							)}
+							nextLabel={
+								<span className="text-blue-600 text-xl font-bold">
+									{'>'}
+								</span>
 							}
-							return classNames.trim();
-						}}
-					/>
+							prevLabel={
+								<span className="text-blue-600 text-xl font-bold">
+									{'<'}
+								</span>
+							}
+							tileClassName={({ date, view }) => {
+								let classNames =
+									'cursor-default hover:bg-transparent focus:bg-transparent';
+								if (isSameDay(date, new Date())) {
+									classNames += ' bg-blue-100 rounded-lg';
+								}
+								return classNames.trim();
+							}}
+						/>
+					</div>
 				</>
 			)}
 		</div>

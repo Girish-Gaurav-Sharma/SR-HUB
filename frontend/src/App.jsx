@@ -287,10 +287,21 @@ const App = () => {
 					/>
 
 					<div
-						className="backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto rounded-3xl w-[calc(100vw-6rem)] shadow-xl transition-all duration-300 mt-4"
-						style={{
-							flexGrow: 1,
-						}}>
+						className="
+    backdrop-blur-md
+    bg-white/40
+    text-black
+    p-6
+    overflow-y-auto
+    rounded-3xl
+    w-[calc(100vw-6rem)]
+    max-[799px]:w-full
+    shadow-xl
+    transition-all
+    duration-300
+    mt-4
+  "
+						style={{ flexGrow: 1 }}>
 						{showNewNavBar && (
 							<>
 								{activeTab === 'AcquisitionDates' && (

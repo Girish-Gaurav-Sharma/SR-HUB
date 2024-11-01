@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 
 const gifs = [
     '/gif1.mp4',
+    '/gif2.mp4',
     '/gif1.mp4',
-    '/gif1.mp4',
-    '/gif1.mp4',
+    '/gif4.mp4',
     '/gif1.mp4',
 ];
 
 // Descriptions for each slide
 const descriptions = [
-    "This is an introduction to SR-HUB, where you can explore satellite data.",
     "Learn how to lock locations for easier access to data.",
+    "Get notified when satellite passes are available in your locked area.",
     "Explore different acquisition dates available for satellite data.",
-    "Navigate the map to view your selected locations in detail.",
+    "Get all dates and times details when satellite passes are available in your locked area.",
     "Understand how to manage and compare data over time."
 ];
 
@@ -37,7 +37,7 @@ const Tutorial = ({ onClose }) => {
 
     // Automatically change GIF every 7 seconds
     useEffect(() => {
-        const intervalId = setInterval(nextGif, 7000);
+        const intervalId = setInterval(nextGif, 16000);
         return () => clearInterval(intervalId);
     }, []);
 

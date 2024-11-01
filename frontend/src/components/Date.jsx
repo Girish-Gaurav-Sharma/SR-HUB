@@ -175,9 +175,8 @@ const Dataa = () => {
 					key={index}
 					className="image-item bg-white p-4 rounded-lg shadow-lg">
 					<div
-						className={`flex items-center justify-center ${
-							bandColors[bandName] || 'bg-gray-400'
-						} rounded-full px-4 py-2 mb-2`}>
+						className={`flex items-center justify-center ${bandColors[bandName] || 'bg-gray-400'
+							} rounded-full px-4 py-2 mb-2`}>
 						<h3 className="text-lg font-semibold text-black">
 							{bandName}
 						</h3>

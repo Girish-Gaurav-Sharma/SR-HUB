@@ -326,107 +326,94 @@ const Dataa = () => {
 
 	const renderMetadata = metadata => {
 		return (
-			<div className="metadata bg-white p-4 rounded-lg shadow-lg">
-				<h2 className="text-2xl font-semibold mb-4">Metadata</h2>
-				<ul className="list-disc pl-6">
+			<div className="metadata bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+				<h2 className="text-2xl font-semibold mb-4 border-b pb-2 border-gray-200">Metadata</h2>
+				<div className="space-y-2">
 					{Object.entries(metadata).map(([key, value]) => (
-						<li
+						<div
 							key={key}
-							className="mb-1">
-							<span className="font-semibold">{key}: </span>
-							{value.toString()}
-						</li>
+							className="flex justify-between items-center p-2 rounded-lg bg-gray-100 even:bg-gray-50 shadow-sm"
+						>
+							<span className="font-medium text-gray-700 capitalize">{key}</span>
+							<span className="text-gray-600">{value.toString()}</span>
+						</div>
 					))}
-				</ul>
+				</div>
 			</div>
+
 		);
 	};
 
 	const renderImages = (bands, composites) => {
 		return (
-			<div className="images grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+			<div className="images grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
 				{/* Bands */}
 				{Object.entries(bands).map(([bandName, bandData], index) => (
-					<div
-						key={index}
-						className="image-item bg-white p-4 rounded-lg shadow-lg">
-						<div
-							className={`flex items-center justify-center w-full ${
-								bandColors[bandName] || 'bg-gray-400'
-							} rounded-full p-4 mb-2`}>
-							<h3 className="text-xl font-semibold text-black">
-								{bandName}
-							</h3>
+					<div key={index} className="image-item bg-white rounded-lg shadow-lg overflow-hidden">
+						<div className={`flex items-center justify-center h-12 ${bandColors[bandName] || 'bg-gray-400'} text-white text-lg font-bold`}>
+							{bandName}
 						</div>
-						<img
-							src={bandData.url}
-							alt={`${bandName} image`}
-							className="w-full h-auto mb-2 rounded"
-						/>
-						<p>
-							<span className="font-semibold">Average: </span>
-							{bandData.average}
-						</p>
+						<img src={bandData.url} alt={`${bandName} image`} className="w-full h-auto object-cover" />
+						<div className="p-4">
+							<p className="text-gray-700">
+								<span className="font-semibold">Average: </span>{bandData.average}
+							</p>
+						</div>
 					</div>
 				))}
+
 				{/* Composites */}
-				{Object.entries(composites).map(
-					([compName, compData], index) => (
-						<div
-							key={index}
-							className="image-item bg-white p-4 rounded-lg shadow-lg">
-							<div className="flex items-center justify-center w-full bg-gray-400 rounded-full p-4 mb-2">
-								<h3 className="text-xl font-semibold text-black">
-									{compName}
-								</h3>
-							</div>
-							<img
-								src={compData.url}
-								alt={`${compName} composite`}
-								className="w-full h-auto rounded"
-							/>
+				{Object.entries(composites).map(([compName, compData], index) => (
+					<div key={index} className="image-item bg-white rounded-lg shadow-lg overflow-hidden">
+						<div className="flex items-center justify-center h-12 bg-gray-500 text-white text-lg font-bold">
+							{compName}
 						</div>
-					)
-				)}
+						<img src={compData.url} alt={`${compName} composite`} className="w-full h-auto object-cover" />
+					</div>
+				))}
 			</div>
+
 		);
 	};
 
 	return (
 		<div className="satellite-data-display h-full">
-			<div className="tabs">
+			{/* Tabs */}
+			<div className="tabs bg-white shadow-sm p-2 rounded-t-lg">
 				<ul className="flex border-b">
-					{satellites.map(satellite => (
+					{satellites.map((satellite) => (
 						<li
 							key={satellite}
-							className={`mr-1 ${
-								selectedSatellite === satellite
-									? 'border-blue-500'
-									: ''
-							}`}>
-							<button
-								className={`bg-white inline-block py-2 px-4 font-semibold ${
-									selectedSatellite === satellite
-										? 'text-blue-700'
-										: 'text-blue-500 hover:text-blue-800'
+							className={`mr-2 pb-1 ${selectedSatellite === satellite ? 'border-b-2 border-blue-500' : ''
 								}`}
-								onClick={() => setSelectedSatellite(satellite)}>
+						>
+							<button
+								className={`px-4 py-2 font-semibold ${selectedSatellite === satellite
+									? 'text-blue-600'
+									: 'text-gray-500 hover:text-blue-500'
+									}`}
+								onClick={() => setSelectedSatellite(satellite)}
+							>
 								{satellite}
 							</button>
 						</li>
 					))}
 				</ul>
 			</div>
+
 			<div className="flex h-full">
 				{/* Left Column - Metadata */}
-				<div className="w-1/3 pr-4">
+				<div className="w-full md:w-1/3 p-4 bg-gray-50 border-r border-gray-200">
 					<div className="sticky top-0">
+						<h2 className="text-xl font-semibold mb-4 text-gray-700">Metadata</h2>
 						{renderMetadata(data[selectedSatellite].metadata)}
 					</div>
 				</div>
+
 				{/* Right Column - Images */}
-				<div className="w-2/3 pl-4 flex flex-col">
-					<div className="flex-1 min-h-0 overflow-y-auto">
+				<div className="w-full md:w-2/3 p-4 flex flex-col bg-white">
+					<div className="flex-1 overflow-y-auto">
+						<h2 className="text-xl font-semibold mb-4 text-gray-700">Images</h2>
 						{renderImages(
 							data[selectedSatellite].bands,
 							data[selectedSatellite].composites
@@ -435,6 +422,7 @@ const Dataa = () => {
 				</div>
 			</div>
 		</div>
+
 	);
 };
 

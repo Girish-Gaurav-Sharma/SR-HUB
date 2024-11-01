@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowLeft, FaArrowRight, FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaTimes, FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 
 const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 	// State for satellite data
@@ -13,6 +13,7 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 	const [loading, setLoading] = useState(true);
 	const [fullscreenImage, setFullscreenImage] = useState(null);
 	const [currentIndex, setCurrentIndex] = useState(0);
+	const [zoomLevel, setZoomLevel] = useState(1);
 
 	let intervalId;
 	const checkDatata = () => {
@@ -83,6 +84,7 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 
 	const closeFullscreen = () => {
 		setFullscreenImage(null);
+		setZoomLevel(1); // Reset zoom level when closing fullscreen
 	};
 
 	const showNextImage = () => {
@@ -96,6 +98,14 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 			(currentIndex - 1 + filteredData.length) % filteredData.length;
 		setCurrentIndex(newIndex);
 		setFullscreenImage(filteredData[newIndex]);
+	};
+
+	const zoomIn = () => {
+		setZoomLevel(prevZoom => Math.min(prevZoom + 0.2, 3)); // Max zoom level 3
+	};
+
+	const zoomOut = () => {
+		setZoomLevel(prevZoom => Math.max(prevZoom - 0.2, 1)); // Min zoom level 1
 	};
 
 	// Render loading, error, or content
@@ -201,9 +211,10 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 						{filteredData.map((item, index) => (
 							<motion.div
 								key={index}
-								className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200"
+								className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200 w-full max-w-full overflow-hidden"
 								whileHover={{ scale: 1.05 }}
-								onClick={() => openFullscreen(index)}>
+								onClick={() => openFullscreen(index)}
+							>
 								{item.real_image_url ? (
 									<img
 										src={item.real_image_url}
@@ -215,21 +226,18 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 										<p>Error loading image</p>
 									</div>
 								)}
-								<div>
+								<div className="break-words">
 									<p>
-										<strong>Satellite:</strong>{' '}
-										{item.satellite_name}
+										<strong>Satellite:</strong> {item.satellite_name}
 									</p>
 									<p>
 										<strong>Date:</strong> {item.date}
 									</p>
 									<p>
-										<strong>Cloud Cover:</strong>{' '}
-										{item.cloudcover}%
+										<strong>Cloud Cover:</strong> {item.cloudcover}%
 									</p>
 									<p>
-										<strong>Scene ID:</strong>{' '}
-										{item.systemId}
+										<strong>Scene ID:</strong> {item.systemId}
 									</p>
 								</div>
 							</motion.div>
@@ -248,37 +256,58 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 						className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}>
-						<div className="relative w-full h-full flex items-center justify-center">
+						exit={{ opacity: 0 }}
+					>
+						<div className="relative w-full h-full flex items-center justify-center overflow-hidden">
 							<motion.img
 								src={fullscreenImage.real_image_url}
 								alt={`Scene ${fullscreenImage.systemId}`}
-								className="max-w-4xl max-h-3/4 object-contain"
+								className="max-w-full max-h-full object-contain"
 								initial={{ scale: 0.8 }}
-								animate={{ scale: 1 }}
+								animate={{ scale: zoomLevel }}
 								exit={{ scale: 0.8 }}
 							/>
+
 							{/* Close button */}
 							<button
 								onClick={closeFullscreen}
-								className="absolute top-4 right-4 text-white text-2xl">
+								className="fixed top-4 right-4 text-white text-2xl"
+							>
 								<FaTimes />
 							</button>
+
+							{/* Zoom In and Zoom Out buttons */}
+							<button
+								onClick={zoomIn}
+								className="fixed bottom-4 left-4 text-white text-2xl"
+							>
+								<FaSearchPlus />
+							</button>
+							<button
+								onClick={zoomOut}
+								className="fixed bottom-4 left-16 text-white text-2xl"
+							>
+								<FaSearchMinus />
+							</button>
+
 							{/* Previous and Next buttons */}
 							<button
 								onClick={showPreviousImage}
-								className="absolute left-4 text-white text-2xl">
+								className="fixed left-4 top-1/2 transform -translate-y-1/2 text-white text-2xl"
+							>
 								<FaArrowLeft />
 							</button>
 							<button
 								onClick={showNextImage}
-								className="absolute right-4 text-white text-2xl">
+								className="fixed right-4 top-1/2 transform -translate-y-1/2 text-white text-2xl"
+							>
 								<FaArrowRight />
 							</button>
 						</div>
 					</motion.div>
 				)}
 			</AnimatePresence>
+
 		</div>
 	);
 };

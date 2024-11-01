@@ -16,6 +16,8 @@ import {
 	FaArrowsAltH,
 	FaExclamationTriangle,
 	FaPlay,
+	FaBars,
+	FaTimes,
 } from 'react-icons/fa';
 
 //-------------------------------------------------------------------------------------
@@ -46,15 +48,6 @@ const App = () => {
 		lng: '-0.0669',
 	});
 	const [satelliteSelections, setSatelliteSelections] = useState([]);
-
-	const handleSatelliteSelection = event => {
-		const { value, checked } = event.target;
-		setSatelliteSelections(prevSelections =>
-			checked
-				? [...prevSelections, value]
-				: prevSelections.filter(item => item !== value)
-		);
-	};
 	const [cloudCover, setCloudCover] = useState(50); // Default 50%
 	const [dimension, setDimension] = useState(1000); // Default 1000 meters
 	const [data, setData] = useState([]);
@@ -67,6 +60,8 @@ const App = () => {
 	const [searchQuery, setSearchQuery] = useState(
 		'Cheapside, Cheapside Farm, Waltham, North East Lincolnshire, England, DN37 0FJ, United Kingdom'
 	);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
 	// const API_URL = 'http://localhost:5000';
 	const API_URL = 'https://sr-hub-backend.onrender.com';
 	const mapRef = useRef();
@@ -89,7 +84,7 @@ const App = () => {
 		} catch (error) {
 			console.error('Error during fetch:', error);
 		} finally {
-			console.log('Finished fetching acquisition dates.'); // Stop loading regardless of the outcome
+			console.log('Finished fetching acquisition dates.');
 		}
 	};
 	//-------------------------------------------------------------------------------------
@@ -165,8 +160,8 @@ const App = () => {
 		const lng = parseFloat(coordinates.lng).toFixed(4);
 		return (
 			<div
-				className="backdrop-blur-md bg-white/40 text-black flex items-center justify-center p-2 h-12 shadow-lg rounded-full mx-6 mt-4"
-				style={{ width: 'calc(100% - 3rem)' }}>
+				className="backdrop-blur-md bg-white/40 text-black flex items-center justify-center p-4 shadow-lg rounded-full mx-6 mt-4 "
+				style={{ width: 'calc(100% - 3rem)', height: 'auto' }}>
 				<p className="text-lg font-semibold">
 					You have locked your location to{' '}
 					<span className="bg-yellow-200 p-1 rounded-md">
@@ -177,6 +172,15 @@ const App = () => {
 					<span className="bg-yellow-200 p-1 rounded-md">{lng}</span>)
 				</p>
 			</div>
+		);
+	};
+	//-------------------------------------------------------------------------------------
+	const handleSatelliteSelection = event => {
+		const { value, checked } = event.target;
+		setSatelliteSelections(prevSelections =>
+			checked
+				? [...prevSelections, value]
+				: prevSelections.filter(item => item !== value)
 		);
 	};
 	//-------------------------------------------------------------------------------------
@@ -221,76 +225,218 @@ const App = () => {
 					</button>
 				</nav>
 			)}
-
 			{showCanvas && (
 				<div
 					className="absolute inset-0 z-30 backdrop-blur-md flex flex-col items-center justify-start overflow-auto"
 					style={{ maxHeight: '100vh' }}>
 					{showNewNavBar && (
-						<nav
-							className="backdrop-blur-md bg-white/40 text-black flex items-center justify-between p-4 h-16 shadow-lg rounded-full mt-4 mx-6"
-							style={{ width: 'calc(100% - 3rem)' }}>
-							<h1 className="text-2xl ml-4 font-bold tracking-wide">
-								SR-HUB
-							</h1>
-							<div className="flex items-center gap-x-4">
-								<button
-									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
-										activeTab === 'AcquisitionDates'
-											? 'bg-blue-800 border border-blue-950'
-											: ''
-									}`}
-									onClick={() =>
-										setActiveTab('AcquisitionDates')
-									}>
-									Turn On Notifications
-								</button>
-								<button
-									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
-										activeTab === 'gallery'
-											? 'bg-blue-800 border border-blue-950'
-											: ''
-									}`}
-									onClick={() => setActiveTab('gallery')}>
-									Request Data
-								</button>
-								<button
-									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
-										activeTab === 'SatelliteCalendar'
-											? 'bg-blue-800 border border-blue-950'
-											: ''
-									}`}
-									onClick={() =>
-										setActiveTab('SatelliteCalendar')
-									}>
-									Satellite Calendar
-								</button>
-								<button
-									className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
-										activeTab === 'Dataa'
-											? 'bg-blue-800 border border-blue-950'
-											: ''
-									}`}
-									onClick={() => setActiveTab('Dataa')}>
-									Complete SR Profile
-								</button>
-							</div>
-							<button
-								className={`${
-									wantData && data.length === 0
-										? 'bg-red-600 hover:bg-red-700'
-										: 'bg-blue-600 hover:bg-blue-800'
-								} text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md`}
-								onClick={() => {
-									setShowOlderNavBar(true);
-									setShowCanvas(false);
-								}}
-								disabled={wantData && data.length === 0}>
-								{wantData && data.length === 0
-									? 'Wait till Data is received'
-									: 'Change Location'}
-							</button>
-						</nav>
+						<>
+							<nav
+								className="
+                backdrop-blur-md bg-white/40 text-black flex items-center justify-between
+                py-4 px-7 h-auto md:h-16 shadow-lg rounded-full md:rounded-full mt-4 mx-4 md:mx-6
+              "
+								style={{ width: 'calc(100% - 3rem)' }}>
+								{/* Logo */}
+								<h1 className="text-2xl font-bold tracking-wide">
+									SR-HUB
+								</h1>
+
+								{/* Navigation Buttons - Desktop */}
+								<div className="hidden md:flex flex-1 justify-center">
+									<div className="flex items-center gap-x-4">
+										{/* Navigation Buttons */}
+										<button
+											className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'AcquisitionDates'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() =>
+												setActiveTab('AcquisitionDates')
+											}>
+											Turn On Notifications
+										</button>
+										<button
+											className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'gallery'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() =>
+												setActiveTab('gallery')
+											}>
+											Request Data
+										</button>
+										<button
+											className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'SatelliteCalendar'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() =>
+												setActiveTab(
+													'SatelliteCalendar'
+												)
+											}>
+											Satellite Calendar
+										</button>
+										<button
+											className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'Dataa'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() =>
+												setActiveTab('Dataa')
+											}>
+											Complete SR Profile
+										</button>
+									</div>
+								</div>
+
+								{/* Change Location Button - Desktop */}
+								<div className="hidden md:flex items-center">
+									<button
+										className={`${
+											wantData && data.length === 0
+												? 'bg-red-600 hover:bg-red-700'
+												: 'bg-blue-600 hover:bg-blue-800'
+										} text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md`}
+										onClick={() => {
+											setShowOlderNavBar(true);
+											setShowCanvas(false);
+										}}
+										disabled={
+											wantData && data.length === 0
+										}>
+										{wantData && data.length === 0
+											? 'Wait till Data is received'
+											: 'Change Location'}
+									</button>
+								</div>
+
+								{/* Hamburger Menu Icon for Mobile */}
+								<div className="md:hidden flex items-center">
+									<button
+										onClick={() =>
+											setIsMobileMenuOpen(
+												!isMobileMenuOpen
+											)
+										}
+										className="text-black focus:outline-none">
+										{isMobileMenuOpen ? (
+											<FaTimes className="h-6 w-6" />
+										) : (
+											<FaBars className="h-6 w-6" />
+										)}
+									</button>
+								</div>
+							</nav>
+
+							{/* Mobile Menu */}
+							{isMobileMenuOpen && (
+								<div className="fixed inset-0 bg-white  z-50 flex flex-col">
+									{/* Close Button and SR-HUB Logo */}
+									<div className="flex items-center justify-between p-4">
+										<h1 className="text-2xl font-bold tracking-wide">
+											SR-HUB
+										</h1>
+										<button
+											onClick={() =>
+												setIsMobileMenuOpen(false)
+											}
+											className="text-black focus:outline-none">
+											<FaTimes className="h-6 w-6" />
+										</button>
+									</div>
+									{/* Navigation Buttons */}
+									<div className="flex flex-col items-center mt-8 space-y-4">
+										<button
+											className={`w-3/4 bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'AcquisitionDates'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() => {
+												setActiveTab(
+													'AcquisitionDates'
+												);
+												setIsMobileMenuOpen(false);
+											}}>
+											Turn On Notifications
+										</button>
+										<button
+											className={`w-3/4 bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'gallery'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() => {
+												setActiveTab('gallery');
+												setIsMobileMenuOpen(false);
+											}}>
+											Request Data
+										</button>
+										<button
+											className={`w-3/4 bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'SatelliteCalendar'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() => {
+												setActiveTab(
+													'SatelliteCalendar'
+												);
+												setIsMobileMenuOpen(false);
+											}}>
+											Satellite Calendar
+										</button>
+										<button
+											className={`w-3/4 bg-blue-600 hover:bg-blue-800 text-white font-semibold
+                      py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+							activeTab === 'Dataa'
+								? 'bg-blue-800 border border-blue-950'
+								: ''
+						}`}
+											onClick={() => {
+												setActiveTab('Dataa');
+												setIsMobileMenuOpen(false);
+											}}>
+											Complete SR Profile
+										</button>
+									</div>
+									{/* Change Location Button */}
+									<div className="mt-auto mb-4 px-4">
+										<button
+											className={`${
+												wantData && data.length === 0
+													? 'bg-red-600 hover:bg-red-700'
+													: 'bg-blue-600 hover:bg-blue-800'
+											} w-full text-white font-semibold py-2 px-6 rounded-full transition-all duration-200 shadow-md`}
+											onClick={() => {
+												setShowOlderNavBar(true);
+												setShowCanvas(false);
+												setIsMobileMenuOpen(false);
+											}}
+											disabled={
+												wantData && data.length === 0
+											}>
+											{wantData && data.length === 0
+												? 'Wait till Data is received'
+												: 'Change Location'}
+										</button>
+									</div>
+								</div>
+							)}
+						</>
 					)}
 
 					{/* Location Info Bar */}
@@ -299,21 +445,12 @@ const App = () => {
 						coordinates={coordinates}
 					/>
 
+					{/* Rest of your component */}
 					<div
 						className="
-    backdrop-blur-md
-    bg-white/40
-    text-black
-    p-6
-    overflow-y-auto
-    rounded-3xl
-    w-[calc(100vw-6rem)]
-    max-[799px]:w-full
-    shadow-xl
-    transition-all
-    duration-300
-    mt-4
-  "
+              backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto rounded-3xl
+              w-[calc(100vw-6rem)] max-[799px]:w-full shadow-xl transition-all duration-300 mt-4
+            "
 						style={{ flexGrow: 1 }}>
 						{showNewNavBar && (
 							<>
@@ -507,6 +644,7 @@ const App = () => {
 																setShowGallery(
 																	true
 																);
+																fetchData();
 															}}
 															disabled={
 																generateDataButtonClicked

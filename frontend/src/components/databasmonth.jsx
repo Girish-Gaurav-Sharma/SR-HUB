@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowLeft, FaArrowRight, FaTimes, FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { FaArrowUp, FaCalendarAlt, FaCloud, FaEye } from 'react-icons/fa';
+import ReactDOM from 'react-dom';
+import Dataa from './Date';
 
-const SatelliteImageGallery = ({ data, selectedSatellites }) => {
+const SatelliteImageGallery = ({ data }) => {
 	// State for satellite data
 	const [filteredData, setFilteredData] = useState([]);
 	const [cloudCoverRange, setCloudCoverRange] = useState([0, 100]);
@@ -10,19 +12,25 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 		field: 'date',
 		order: 'desc',
 	});
+	const [isDataMounted, setIsDataMounted] = useState(false);
 	const [loading, setLoading] = useState(true);
-	const [fullscreenImage, setFullscreenImage] = useState(null);
-	const [currentIndex, setCurrentIndex] = useState(0);
-	const [zoomLevel, setZoomLevel] = useState(1);
-
-	let intervalId;
-	const checkDatata = () => {
-		if (data.length !== 0) {
-			setLoading(false);
-			clearInterval(intervalId);
-		}
+	const [selectedSatellites, setSelectedSatellites] = useState([]);
+	const [popupMessage, setPopupMessage] = useState(null);
+	const dataLoadedRef = useRef(false);
+	const mountDataComponent = () => {
+		// You can set a state that conditionally renders <Data />
+		setIsDataMounted(true);
 	};
-	intervalId = setInterval(checkDatata, 100);
+	// Check if data is loaded and initialize selectedSatellites
+	useEffect(() => {
+		if (data && data.length > 0 && !dataLoadedRef.current) {
+			setLoading(false);
+			setSelectedSatellites([
+				...new Set(data.map(item => item.satellite_name)),
+			]);
+			dataLoadedRef.current = true;
+		}
+	}, [data]);
 
 	// Update filtered data whenever filters or sorting change
 	useEffect(() => {
@@ -77,35 +85,22 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 		setSortOption({ ...sortOption, order: event.target.value });
 	};
 
-	const openFullscreen = index => {
-		setCurrentIndex(index);
-		setFullscreenImage(filteredData[index]);
+	// Show popup when a card is clicked
+	const showPopup = () => {
+		setPopupMessage('No data available');
 	};
 
-	const closeFullscreen = () => {
-		setFullscreenImage(null);
-		setZoomLevel(1); // Reset zoom level when closing fullscreen
+	const closePopup = () => {
+		setPopupMessage(null);
 	};
 
-	const showNextImage = () => {
-		const newIndex = (currentIndex + 1) % filteredData.length;
-		setCurrentIndex(newIndex);
-		setFullscreenImage(filteredData[newIndex]);
-	};
-
-	const showPreviousImage = () => {
-		const newIndex =
-			(currentIndex - 1 + filteredData.length) % filteredData.length;
-		setCurrentIndex(newIndex);
-		setFullscreenImage(filteredData[newIndex]);
-	};
-
-	const zoomIn = () => {
-		setZoomLevel(prevZoom => Math.min(prevZoom + 0.2, 3)); // Max zoom level 3
-	};
-
-	const zoomOut = () => {
-		setZoomLevel(prevZoom => Math.max(prevZoom - 0.2, 1)); // Min zoom level 1
+	const satelliteColors = {
+		'Sentinel-2A': 'bg-blue-400',
+		'Sentinel-2B': 'bg-green-400',
+		'Landsat 8': 'bg-red-400',
+		'Landsat 9': 'bg-orange-400',
+		HLS: 'bg-yellow-400',
+		// Add more if necessary
 	};
 
 	// Render loading, error, or content
@@ -114,7 +109,7 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 			<div className="flex items-center justify-center h-screen">
 				<div className="text-center flex flex-col items-center justify-center">
 					<div className="loader-spinner rounded-full border-t-4 border-b-4 border-blue-500 w-16 h-16 animate-spin"></div>
-					<p className="mt-4 text-xl font-bold">
+					<p className="mt-4 text-2xl font-semibold">
 						Loading Satellite Images...
 					</p>
 					<p className="mt-2 text-lg text-gray-700">
@@ -126,188 +121,258 @@ const SatelliteImageGallery = ({ data, selectedSatellites }) => {
 	}
 
 	return (
-		<div className="satellite-image-gallery flex fixed inset-0 z-50 bg-white">
-			{/* Left Column */}
-			<div className="w-1/4 p-4 bg-gray-100 flex flex-col">
-				{/* Sorting options */}
-				<div className="mb-6">
-					<h2 className="text-xl font-semibold mb-2">Sort Options</h2>
-					<div className="flex flex-col space-y-2">
-						<div>
-							<label className="mr-2 font-semibold">
-								Sort by:
-							</label>
-							<select
-								value={sortOption.field}
-								onChange={handleSortFieldChange}
-								className="border rounded p-1 w-full">
-								<option value="date">Date</option>
-								<option value="cloudcover">Cloud Cover</option>
-							</select>
-						</div>
-						<div>
-							<label className="mr-2 font-semibold">Order:</label>
-							<select
-								value={sortOption.order}
-								onChange={handleSortOrderChange}
-								className="border rounded p-1 w-full">
-								<option value="asc">Ascending</option>
-								<option value="desc">Descending</option>
-							</select>
-						</div>
-					</div>
-				</div>
-				{/* Filters */}
-				<div className="flex-1 overflow-auto">
-					{/* Satellite checkboxes */}
-					<div className="mb-6">
-						<h2 className="text-xl font-semibold mb-2">
-							Satellite Name
-						</h2>
-						{[
-							...new Set(data.map(item => item.satellite_name)),
-						].map(name => (
-							<div
-								key={name}
-								className="mb-1">
-								<label className="inline-flex items-center">
-									<input
-										type="checkbox"
-										className="form-checkbox"
-										checked={selectedSatellites.includes(
-											name
-										)}
-										onChange={() =>
-											handleSatelliteChange(name)
-										}
-									/>
-									<span className="ml-2">{name}</span>
-								</label>
-							</div>
-						))}
-					</div>
-					{/* Cloud cover slider */}
-					<div className="mb-6">
-						<h2 className="text-xl font-semibold mb-2">
-							Cloud Cover ({cloudCoverRange[0]}% -{' '}
-							{cloudCoverRange[1]}%)
-						</h2>
-						<input
-							type="range"
-							min="0"
-							max="100"
-							value={cloudCoverRange[1]}
-							onChange={handleCloudCoverChange}
-							className="w-full"
-						/>
-					</div>
-				</div>
-			</div>
-			{/* Right Column */}
-			<div className="w-3/4 flex flex-col">
-				{/* Images */}
-				<div className="flex-1 overflow-y-auto p-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						{filteredData.map((item, index) => (
-							<motion.div
-								key={index}
-								className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200 w-full max-w-full overflow-hidden"
-								whileHover={{ scale: 1.05 }}
-								onClick={() => openFullscreen(index)}
-							>
-								{item.real_image_url ? (
-									<img
-										src={item.real_image_url}
-										alt={`Scene ${item.systemId}`}
-										className="w-full h-48 object-cover mb-2 rounded"
-									/>
-								) : (
-									<div className="w-full h-48 flex items-center justify-center bg-gray-200 mb-2 rounded">
-										<p>Error loading image</p>
+		<div className="satellite-image-gallery h-full">
+			<div className="flex flex-col md:flex-row h-full">
+				{/* Left Column */}
+				<div className="w-full md:w-1/3 md:pr-4 mb-4 md:mb-0">
+					<div className="md:sticky md:top-0">
+						{/* Sorting options */}
+						<div className="mb-6 bg-white p-6 rounded-lg shadow-lg">
+							<h2 className="text-2xl font-semibold mb-6 text-gray-800">
+								Sort Options
+							</h2>
+							<div className="space-y-4">
+								<div className="flex items-center bg-gray-50 p-4 rounded-lg">
+									<div className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md mr-4">
+										<FaCalendarAlt className="text-green-500" />
 									</div>
-								)}
-								<div className="break-words">
-									<p>
-										<strong>Satellite:</strong> {item.satellite_name}
-									</p>
-									<p>
-										<strong>Date:</strong> {item.date}
-									</p>
-									<p>
-										<strong>Cloud Cover:</strong> {item.cloudcover}%
-									</p>
-									<p>
-										<strong>Scene ID:</strong> {item.systemId}
-									</p>
+									<div className="flex-1">
+										<label className="text-gray-600 text-sm font-semibold">
+											Sort by
+										</label>
+										<select
+											value={sortOption.field}
+											onChange={handleSortFieldChange}
+											className="border rounded p-1 w-full mt-1">
+											<option value="date">Date</option>
+											<option value="cloudcover">
+												Cloud Cover
+											</option>
+										</select>
+									</div>
 								</div>
-							</motion.div>
-						))}
-						{filteredData.length === 0 && (
-							<p>No images match the selected filters.</p>
-						)}
+								<div className="flex items-center bg-gray-50 p-4 rounded-lg">
+									<div className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md mr-4">
+										<FaArrowUp className="text-blue-500" />
+									</div>
+									<div className="flex-1">
+										<label className="text-gray-600 text-sm font-semibold">
+											Order
+										</label>
+										<select
+											value={sortOption.order}
+											onChange={handleSortOrderChange}
+											className="border rounded p-1 w-full mt-1">
+											<option value="asc">
+												Ascending
+											</option>
+											<option value="desc">
+												Descending
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>
+						</div>
+						{/* Filters */}
+						<div className="mb-6 bg-white p-6 rounded-lg shadow-lg">
+							<h2 className="text-2xl font-semibold mb-6 text-gray-800">
+								Satellite Name
+							</h2>
+							<div className="space-y-2">
+								{[
+									...new Set(
+										data.map(item => item.satellite_name)
+									),
+								].map(name => (
+									<div
+										key={name}
+										className="flex items-center bg-gray-50 p-2 rounded-lg">
+										<input
+											type="checkbox"
+											className="form-checkbox h-5 w-5 text-blue-600"
+											checked={selectedSatellites.includes(
+												name
+											)}
+											onChange={() =>
+												handleSatelliteChange(name)
+											}
+										/>
+										<span className="ml-2 text-gray-800">
+											{name}
+										</span>
+									</div>
+								))}
+							</div>
+						</div>
+						{/* Cloud cover slider */}
+						<div className="mb-6 bg-white p-6 rounded-lg shadow-lg">
+							<h2 className="text-2xl font-semibold mb-6 text-gray-800">
+								Cloud Cover ({cloudCoverRange[0]}% -{' '}
+								{cloudCoverRange[1]}%)
+							</h2>
+							<div className="flex items-center bg-gray-50 p-4 rounded-lg">
+								<div className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md mr-4">
+									<FaCloud className="text-gray-500" />
+								</div>
+								<input
+									type="range"
+									min="0"
+									max="100"
+									value={cloudCoverRange[1]}
+									onChange={handleCloudCoverChange}
+									className="w-full"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/* Right Column */}
+				<div className="w-full md:w-2/3 md:pl-4 flex flex-col">
+					{/* Images */}
+					<div className="flex-1 h-auto p-4">
+						<div className="images grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+							{filteredData.map((item, index) => (
+								<motion.div
+									key={index}
+									className="image-item bg-white p-4 rounded-lg shadow-lg cursor-pointer"
+									whileHover={{ scale: 1.05 }}
+									onClick={showPopup}>
+									<div
+										className={`flex items-center justify-center ${
+											satelliteColors[
+												item.satellite_name
+											] || 'bg-gray-400'
+										} rounded-full px-4 py-2 mb-2`}>
+										<h3 className="text-lg font-semibold text-black">
+											{item.satellite_name}
+										</h3>
+									</div>
+									{item.real_image_url ? (
+										<img
+											src={item.real_image_url}
+											alt={`Scene ${item.systemId}`}
+											className="w-full h-auto mb-2 rounded"
+										/>
+									) : (
+										<div className="w-full h-48 flex items-center justify-center bg-gray-200 mb-2 rounded">
+											<p>Error loading image</p>
+										</div>
+									)}
+									{/* Details */}
+									<div className="space-y-2">
+										<div className="flex items-start bg-gray-50 p-2 rounded-lg">
+											<div className="w-6 h-6 flex items-center justify-center rounded-full bg-white shadow-md mr-2">
+												<FaCalendarAlt className="text-green-500" />
+											</div>
+											<div className="flex-1">
+												<p className="text-gray-600 text-sm">
+													Date
+												</p>
+												<p className="text-gray-800 font-medium">
+													{item.date}
+												</p>
+											</div>
+										</div>
+										<div className="flex items-start bg-gray-50 p-2 rounded-lg">
+											<div className="w-6 h-6 flex items-center justify-center rounded-full bg-white shadow-md mr-2">
+												<FaCloud className="text-gray-500" />
+											</div>
+											<div className="flex-1">
+												<p className="text-gray-600 text-sm">
+													Cloud Cover
+												</p>
+												<p className="text-gray-800 font-medium">
+													{item.cloudcover}%
+												</p>
+											</div>
+										</div>
+										<div className="flex items-start bg-gray-50 p-2 rounded-lg">
+											<div className="w-6 h-6 flex items-center justify-center rounded-full bg-white shadow-md mr-2">
+												<FaEye className="text-purple-500" />
+											</div>
+											<div className="flex-1 break-words break-all">
+												<p className="text-gray-600 text-sm">
+													Scene ID
+												</p>
+												<p className="text-gray-800 font-medium">
+													{item.systemId}
+												</p>
+											</div>
+										</div>
+									</div>
+								</motion.div>
+							))}
+							{filteredData.length === 0 && (
+								<p>No images match the selected filters.</p>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
 
-			{/* Fullscreen View */}
-			<AnimatePresence>
-				{fullscreenImage && (
-					<motion.div
-						className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-					>
-						<div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-							<motion.img
-								src={fullscreenImage.real_image_url}
-								alt={`Scene ${fullscreenImage.systemId}`}
-								className="max-w-full max-h-full object-contain"
-								initial={{ scale: 0.8 }}
-								animate={{ scale: zoomLevel }}
-								exit={{ scale: 0.8 }}
-							/>
-
-							{/* Close button */}
+			{/* Popup Message */}
+			{popupMessage &&
+				ReactDOM.createPortal(
+					<div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+						<div className="bg-white max-w-lg w-full mx-4 md:mx-auto p-8 rounded-lg shadow-2xl text-center relative">
 							<button
-								onClick={closeFullscreen}
-								className="fixed top-4 right-4 text-white text-2xl"
-							>
-								<FaTimes />
+								onClick={closePopup}
+								className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 focus:outline-none">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									className="h-6 w-6"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M6 18L18 6M6 6l12 12"
+									/>
+								</svg>
 							</button>
-
-							{/* Zoom In and Zoom Out buttons */}
-							<button
-								onClick={zoomIn}
-								className="fixed bottom-4 left-4 text-white text-2xl"
-							>
-								<FaSearchPlus />
-							</button>
-							<button
-								onClick={zoomOut}
-								className="fixed bottom-4 left-16 text-white text-2xl"
-							>
-								<FaSearchMinus />
-							</button>
-
-							{/* Previous and Next buttons */}
-							<button
-								onClick={showPreviousImage}
-								className="fixed left-4 top-1/2 transform -translate-y-1/2 text-white text-2xl"
-							>
-								<FaArrowLeft />
-							</button>
-							<button
-								onClick={showNextImage}
-								className="fixed right-4 top-1/2 transform -translate-y-1/2 text-white text-2xl"
-							>
-								<FaArrowRight />
-							</button>
+							<div className="flex flex-col items-center">
+								<p className="text-2xl font-semibold text-gray-900">
+									It may take 5 minutes to generate the
+									complete SR profile of the scene.
+								</p>
+								<button
+									onClick={() => {
+										closePopup(); // Close the popup first
+										mountDataComponent(); // Call the function to mount <Data />
+									}}
+									className="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200">
+									Generate Complete SR Profile
+								</button>
+							</div>
 						</div>
-					</motion.div>
+					</div>,
+					document.body
 				)}
-			</AnimatePresence>
-
+			{isDataMounted &&
+				ReactDOM.createPortal(
+					<div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
+						{/* Sticky Close Button */}
+						<button
+							className="fixed top-1 right-4 text-white bg-red-600 w-20 rounded-full p-3 hover:bg-red-700 text-lg font-semibold z-50"
+							onClick={() => setIsDataMounted(false)} // Ensure `setIsDataMounted` is a function to toggle mounting
+						>
+							✕
+						</button>
+						<div
+							className="
+                    backdrop-blur-md bg-white/40 text-black p-6 overflow-y-auto rounded-3xl
+                    w-[calc(100vw-2rem)] max-[799px]:w-[95vw] max-[799px]:h-[95vh] h-[calc(100vh-2rem)]
+                    shadow-2xl transition-all duration-300 mt-10 relative
+                "
+							style={{ flexGrow: 1 }}>
+							<Dataa />
+						</div>
+					</div>,
+					document.body
+				)}
 		</div>
 	);
 };

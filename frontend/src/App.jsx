@@ -38,7 +38,7 @@ const App = () => {
 	const [acquisitionCount, setAcquisitionCount] = useState(1);
 	const [selectionOption, setSelectionOption] = useState('date');
 	const startDateValue = new Date().toISOString().split('T')[0];
-	const endDateValue = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+	const endDateValue = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
 		.toISOString()
 		.split('T')[0];
 	const [endDate, setStartDateValue] = useState(startDateValue);

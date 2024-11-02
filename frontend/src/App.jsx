@@ -9,6 +9,9 @@ import ThreeMonthCalendar from './components/Calanderview';
 import Dataa from './components/Date';
 import NotificationSignupPage from './components/Form';
 import Tutorial from './components/Tutorial';
+import { differenceInDays } from 'date-fns';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import SatelliteImageGallery from './components/databasmonth';
 import {
 	FaSatellite,
@@ -32,13 +35,16 @@ const App = () => {
 	const [showNewNavBar, setShowNewNavBar] = useState(false);
 	const [calendarData, setCalendarData] = useState([]);
 	const [showTutorial, setShowTutorial] = useState(true);
+	const [acquisitionCount, setAcquisitionCount] = useState(1);
+	const [selectionOption, setSelectionOption] = useState('date');
 	const startDateValue = new Date().toISOString().split('T')[0];
 	const endDateValue = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
 		.toISOString()
 		.split('T')[0];
 	const [endDate, setStartDateValue] = useState(startDateValue);
 	const [startDate, setEndDateValue] = useState(endDateValue);
-
+	const [dataStartDate, setDataStartDate] = useState(null);
+	const [dataEndDate, setDataEndDate] = useState(null);
 	const [center, setCenter] = useState([53.504, -0.0669]);
 	const [zoom, setZoom] = useState(8);
 	const [dates, setdates] = useState([]);
@@ -68,6 +74,16 @@ const App = () => {
 
 	//-------------------------------------------------------------------------------------
 
+	const handleDateChange = (date, isStart) => {
+		if (isStart) {
+			setDataStartDate(date);
+			if (dataEndDate && differenceInDays(dataEndDate, date) > 30) {
+				setDataEndDate(null); // Reset end date if range exceeds 30 days
+			}
+		} else {
+			setDataEndDate(date);
+		}
+	};
 	const fetchAcquisitionDates = async () => {
 		console.log('Fetching acquisition dates...');
 
@@ -621,6 +637,169 @@ const App = () => {
 															</div>
 														</div>
 
+														{/* Date Range or Past Acquisitions Selection */}
+														<div className="space-y-4">
+															<h3 className="text-lg font-medium text-gray-800 mb-4">
+																Select Data
+																Retrieval Method
+															</h3>
+															<div className="flex items-center space-x-4">
+																<label className="flex items-center">
+																	<input
+																		type="radio"
+																		name="selectionOption"
+																		value="date"
+																		checked={
+																			selectionOption ===
+																			'date'
+																		}
+																		onChange={() =>
+																			setSelectionOption(
+																				'date'
+																			)
+																		}
+																		className="mr-2"
+																	/>
+																	Date Range
+																</label>
+																<label className="flex items-center">
+																	<input
+																		type="radio"
+																		name="selectionOption"
+																		value="acquisitions"
+																		checked={
+																			selectionOption ===
+																			'acquisitions'
+																		}
+																		onChange={() =>
+																			setSelectionOption(
+																				'acquisitions'
+																			)
+																		}
+																		className="mr-2"
+																	/>
+																	Number of
+																	Past
+																	Acquisitions
+																</label>
+															</div>
+
+															{/* Conditional Rendering Based on Selection */}
+															{selectionOption ===
+															'date' ? (
+																<div className="space-y-4">
+																	<h3 className="text-lg font-medium text-gray-800 mb-4">
+																		Select
+																		Date
+																		Range
+																		(Max 30
+																		Days)
+																	</h3>
+																	<div className="flex items-center bg-gray-50 p-4 rounded-lg space-x-4">
+																		<div className="flex-1">
+																			<label className="block text-gray-600 mb-1">
+																				Start
+																				Date
+																			</label>
+																			<DatePicker
+																				selected={
+																					dataStartDate
+																				}
+																				onChange={date =>
+																					handleDateChange(
+																						date,
+																						true
+																					)
+																				}
+																				selectsStart
+																				startDate={
+																					dataStartDate
+																				}
+																				endDate={
+																					dataEndDate
+																				}
+																				maxDate={
+																					new Date()
+																				}
+																				className="w-full p-2 border rounded-lg"
+																			/>
+																		</div>
+																		<div className="flex-1">
+																			<label className="block text-gray-600 mb-1">
+																				End
+																				Date
+																			</label>
+																			<DatePicker
+																				selected={
+																					dataEndDate
+																				}
+																				onChange={date =>
+																					handleDateChange(
+																						date,
+																						false
+																					)
+																				}
+																				selectsEnd
+																				startDate={
+																					dataStartDate
+																				}
+																				endDate={
+																					dataEndDate
+																				}
+																				minDate={
+																					dataStartDate
+																				}
+																				maxDate={
+																					dataStartDate
+																						? new Date(
+																								dataStartDate.getTime() +
+																									30 *
+																										86400000
+																						  )
+																						: null
+																				}
+																				className="w-full p-2 border rounded-lg"
+																			/>
+																		</div>
+																	</div>
+																</div>
+															) : (
+																<div className="space-y-4">
+																	<h3 className="text-lg font-medium text-gray-800 mb-4">
+																		Number
+																		of Past
+																		Acquisitions
+																	</h3>
+																	<div className="flex items-center bg-gray-50 p-4 rounded-lg">
+																		<div className="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-md mr-4">
+																			<FaSatellite className="text-blue-500" />
+																		</div>
+																		<input
+																			type="range"
+																			min="1"
+																			max="10"
+																			value={
+																				acquisitionCount
+																			}
+																			onChange={e =>
+																				setAcquisitionCount(
+																					e
+																						.target
+																						.value
+																				)
+																			}
+																			className="w-full h-3 bg-gray-300 rounded-full focus:outline-none"
+																		/>
+																		<span className="text-gray-800 font-medium ml-4">
+																			{
+																				acquisitionCount
+																			}
+																		</span>
+																	</div>
+																</div>
+															)}
+														</div>
+
 														{/* Warning Message */}
 														<div className="bg-yellow-50 p-4 rounded-lg flex items-center">
 															<FaExclamationTriangle className="text-yellow-600 mr-3" />
@@ -642,10 +821,10 @@ const App = () => {
 																setWantData(
 																	true
 																);
-																setGenerateDataButtonClicked(
+																setShowGallery(
 																	true
 																);
-																setShowGallery(
+																setGenerateDataButtonClicked(
 																	true
 																);
 																fetchData();

@@ -5,8 +5,8 @@ const gifs = [
     '/gif2.mp4',
     '/gif3.mp4',
     '/gif4.mp4',
-    '/gif6.mp4',
     '/gif5.mp4',
+    '/gif6.mp4',
     '/gif7.mp4',
 ];
 

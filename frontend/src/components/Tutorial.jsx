@@ -1,20 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const gifs = [
     '/gif1.mp4',
     '/gif2.mp4',
-    '/gif1.mp4',
+    '/gif3.mp4',
     '/gif4.mp4',
-    '/gif1.mp4',
+    '/gif6.mp4',
+    '/gif5.mp4',
+    '/gif7.mp4',
 ];
 
 // Descriptions for each slide
 const descriptions = [
     "Learn how to lock locations for easier access to data.",
-    "Get notified when satellite passes are available in your locked area.",
-    "Explore different acquisition dates available for satellite data.",
+    "Get notified on Mobile, Email, and WhatsApp when satellite passes are available in your locked area.",
+    "Generate data for selected location based on user input: satellite choice, cloud coverage, and lead time.",
+    "See location details: satellite view, scene id, cloud coverage and date.",
+    "Generate SR profile for a particular satellite image of a locked location.",
     "Get all dates and times details when satellite passes are available in your locked area.",
-    "Understand how to manage and compare data over time."
+    "Generate complete SR profile for a particular satellite image of a locked location."
 ];
 
 const Tutorial = ({ onClose }) => {
@@ -35,12 +39,6 @@ const Tutorial = ({ onClose }) => {
         });
     };
 
-    // Automatically change GIF every 7 seconds
-    useEffect(() => {
-        const intervalId = setInterval(nextGif, 16000);
-        return () => clearInterval(intervalId);
-    }, []);
-
     return (
         <div className="fixed inset-0 z-50 backdrop-blur-sm bg-white/10 flex items-center justify-center">
             <div className="relative bg-white p-8 rounded-xl shadow-lg max-w-full max-h-full text-center">
@@ -54,9 +52,9 @@ const Tutorial = ({ onClose }) => {
                 </button>
 
                 <h2 className="text-2xl font-bold mb-4">Tutorial for SR-HUB</h2>
-                <p className="mb-4">
-                    Here you can explore satellite data, lock locations, and view acquisition dates. Let’s take a quick tour!
-                </p>
+
+                {/* Explanatory Text for Each Slide in Bold */}
+                <p className="text-lg font-bold text-gray-700 mb-2">{descriptions[currentGif]}</p>
 
                 {/* Carousel Display */}
                 <div className="mb-4">
@@ -64,13 +62,11 @@ const Tutorial = ({ onClose }) => {
                         src={gifs[currentGif]}
                         className="rounded-lg max-h-96 w-full" // Make video full width and limit height
                         autoPlay
-                        loop
+                        loop={false}
                         muted
+                        onEnded={nextGif} // Change to next video when the current one ends
                     />
                 </div>
-
-                {/* Explanatory Text for Each Slide */}
-                <p className="text-lg text-gray-700 mb-2">{descriptions[currentGif]}</p>
 
                 {/* Next Button */}
                 <button

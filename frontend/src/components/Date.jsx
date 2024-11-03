@@ -10,86 +10,84 @@ import {
 const Dataa = () => {
 	const data = {
 		metadata: {
-			coordinates: [80.249, 13.082],
-			imageBufferSize: 5000,
+			coordinates: [-122.292, 37.901],
+			imageBufferSize: 10000,
 			avgBufferSize: 100,
-			startDate: '2021-01-01',
-			endDate: '2021-12-31',
-			CLOUD_COVERAGE: 3,
-			SPATIAL_COVERAGE: 100,
-			MEAN_SUN_AZIMUTH_ANGLE: 146.29,
-			MEAN_SUN_ZENITH_ANGLE: 43.75,
-			MEAN_VIEW_AZIMUTH_ANGLE: 221.98,
-			MEAN_VIEW_ZENITH_ANGLE: 2.98,
+			DATE_ACQUIRED: '2021-12-26',
+			LANDSAT_SCENE_ID: 'LC90440342021360LGN02',
+			LANDSAT_PRODUCT_ID: 'LC09_L2SP_044034_20211226_20230503_02_T1',
+			CLOUD_COVER: 69.48,
+			SUN_AZIMUTH: 158.78045423,
+			SUN_ELEVATION: 26.13745452,
+			EARTH_SUN_DISTANCE: 0.9834718,
+			GEOMETRIC_RMSE_MODEL: 8.399,
+			GEOMETRIC_RMSE_MODEL_X: 5.288,
+			GEOMETRIC_RMSE_MODEL_Y: 6.525,
 		},
 		bands: {
-			B2: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.06,
+			SR_B2: {
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/097aec21db3323c5a3ebc1512a81dd1c-d2de2542f48feef022a3e0bfdea4d4a6:getPixels',
+				average: 0.09715862110175277,
 			},
-			B3: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.1,
+			SR_B3: {
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/d0c738a8a32ec4d3ccebd1802acd5a23-5692abe654f709563bf90f151c67cefa:getPixels',
+				average: 0.1445113487366264,
 			},
-			B4: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.1,
+			SR_B4: {
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/e657b5e60a7e113e21b55493f98b6037-094aae04a3732df41f34db8f1e0d212d:getPixels',
+				average: 0.1510424547575688,
 			},
-			B5: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.2,
+			SR_B5: {
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/557b4e04edf64c71bcfbd83712ff4780-1e4da908e6c032dd0764f877aff55021:getPixels',
+				average: 0.2617978565331207,
 			},
-			B6: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.2,
+			SR_B6: {
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/4da5529f0a988c15d73ab8961df2d301-789d46a18c560002fa006b304d94b6ca:getPixels',
+				average: 0.24065613760528104,
 			},
-			B7: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.15,
+			SR_B7: {
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/8c474d3e5aa0467efb3b76eb9dee426a-77bce9e695aa92608a0edd5ca62f2869:getPixels',
+				average: 0.23094760471204184,
+			},
+			ST_B10: {
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/00f3b7d9e3544a006f269341fec61f8d-f5ffc2abe9269452599a862fd4a21d7c:getPixels',
+				average: 256.8173560821079,
 			},
 			NDVI: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.34,
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/4f70048c6f427dde26efb4d0fc0af833-945667819242e1562be7d1d7e51110d0:getPixels',
+				average: 0.27197987198898294,
 			},
 			NDWI: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: -0.36,
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/9f33deaf3e291c2c33fa36686548099f-ddbe91bcd55f5cb630a2129c2ea27942:getPixels',
+				average: -0.29255266248159173,
 			},
 			EVI: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
-				average: 0.19,
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/2cf37b5708167c1ed88a4a6e5595ebe5-31904fc9a652e2b1938e6181b7f45e4e:getPixels',
+				average: 0.19483414004532806,
 			},
 		},
 		composites: {
 			RGB: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/a9379b341212d75194bf02878c2cdc93-59c3d865543397e4bf843acd69a659f6:getPixels',
 			},
 			False_Color: {
-				url: 'https://custom-scripts.sentinel-hub.com/custom-scripts/hls/true_color/fig/fig1.jpeg',
+				url: 'https://earthengine.googleapis.com/v1/projects/earthengine-legacy/thumbnails/fdc7f247b773444d7ad16f9f1021c3fe-920109b3c9a0b8fb4484faa7fbb10836:getPixels',
 			},
 		},
 	};
 
 	const bandColors = {
-		B2: 'bg-blue-400',
-		B3: 'bg-green-400',
-		B4: 'bg-red-400',
-		B5: 'bg-orange-400',
-		B6: 'bg-yellow-400',
-		B7: 'bg-purple-400',
-		NDVI: 'bg-teal-400',
-		NDWI: 'bg-indigo-400',
-		EVI: 'bg-pink-400',
+		SR_B2: 'bg-blue-400',
+		SR_B3: 'bg-green-400',
+		SR_B4: 'bg-red-400',
+		SR_B5: 'bg-orange-400',
+		SR_B6: 'bg-yellow-400',
+		SR_B7: 'bg-purple-400',
+		ST_B10: 'bg-teal-400',
+		NDVI: 'bg-indigo-400',
+		NDWI: 'bg-pink-400',
+		EVI: 'bg-gray-400',
 	};
-
-	const formatKeyName = key =>
-		key
-			.replace(/_/g, ' ')
-			.replace(/([A-Z])/g, ' $1')
-			.replace(/\s+/g, ' ')
-			.toLowerCase()
-			.trim()
-			.replace(/\b\w/g, str => str.toUpperCase());
 
 	const renderMetadata = metadata => {
 		const items = [
@@ -100,42 +98,33 @@ const Dataa = () => {
 			},
 			{
 				icon: <FaCalendarAlt className="text-green-500" />,
-				label: 'Date Range',
-				value: `${new Date(
-					metadata.startDate
-				).toLocaleDateString()} - ${new Date(
-					metadata.endDate
-				).toLocaleDateString()}`,
+				label: 'Date Acquired',
+				value: metadata.DATE_ACQUIRED,
 			},
 			{
 				icon: <FaCloud className="text-gray-500" />,
-				label: 'Cloud Coverage',
-				value: `${metadata.CLOUD_COVERAGE}%`,
+				label: 'Cloud Cover',
+				value: `${metadata.CLOUD_COVER}%`,
 			},
 			{
 				icon: <FaSun className="text-yellow-500" />,
-				label: 'Mean Sun Azimuth Angle',
-				value: `${metadata.MEAN_SUN_AZIMUTH_ANGLE.toFixed(2)}°`,
+				label: 'Sun Azimuth',
+				value: `${metadata.SUN_AZIMUTH.toFixed(2)}°`,
 			},
 			{
 				icon: <FaSun className="text-orange-500" />,
-				label: 'Mean Sun Zenith Angle',
-				value: `${metadata.MEAN_SUN_ZENITH_ANGLE.toFixed(2)}°`,
+				label: 'Sun Elevation',
+				value: `${metadata.SUN_ELEVATION.toFixed(2)}°`,
 			},
 			{
 				icon: <FaEye className="text-purple-500" />,
-				label: 'Mean View Azimuth Angle',
-				value: `${metadata.MEAN_VIEW_AZIMUTH_ANGLE.toFixed(2)}°`,
+				label: 'Earth-Sun Distance',
+				value: metadata.EARTH_SUN_DISTANCE.toFixed(6),
 			},
 			{
 				icon: <FaEye className="text-pink-500" />,
-				label: 'Mean View Zenith Angle',
-				value: `${metadata.MEAN_VIEW_ZENITH_ANGLE.toFixed(2)}°`,
-			},
-			{
-				icon: <FaCloud className="text-indigo-500" />,
-				label: 'Spatial Coverage',
-				value: `${metadata.SPATIAL_COVERAGE}%`,
+				label: 'Geometric RMSE Model',
+				value: metadata.GEOMETRIC_RMSE_MODEL.toFixed(2),
 			},
 		];
 
@@ -169,14 +158,14 @@ const Dataa = () => {
 
 	const renderImages = (bands, composites) => (
 		<div className="images grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-			{/* Bands */}
 			{Object.entries(bands).map(([bandName, bandData], index) => (
 				<div
 					key={index}
 					className="image-item bg-white p-4 rounded-lg shadow-lg">
 					<div
-						className={`flex items-center justify-center ${bandColors[bandName] || 'bg-gray-400'
-							} rounded-full px-4 py-2 mb-2`}>
+						className={`flex items-center justify-center ${
+							bandColors[bandName] || 'bg-gray-400'
+						} rounded-full px-4 py-2 mb-2`}>
 						<h3 className="text-lg font-semibold text-black">
 							{bandName}
 						</h3>
@@ -192,14 +181,13 @@ const Dataa = () => {
 					</p>
 				</div>
 			))}
-			{/* Composites */}
 			{Object.entries(composites).map(([compName, compData], index) => (
 				<div
 					key={index}
 					className="image-item bg-white p-4 rounded-lg shadow-lg">
 					<div className="flex items-center justify-center bg-gray-400 rounded-full px-4 py-2 mb-2">
 						<h3 className="text-lg font-semibold text-black">
-							{formatKeyName(compName)}
+							{compName}
 						</h3>
 					</div>
 					<img
@@ -215,13 +203,11 @@ const Dataa = () => {
 	return (
 		<div className="satellite-data-display h-full">
 			<div className="flex flex-col md:flex-row h-full">
-				{/* Left Column - Metadata */}
 				<div className="w-full md:w-1/3 md:pr-4 mb-4 md:mb-0">
 					<div className="md:sticky md:top-0">
 						{renderMetadata(data.metadata)}
 					</div>
 				</div>
-				{/* Right Column - Images */}
 				<div className="w-full md:w-2/3 md:pl-4 flex flex-col">
 					<div className="flex-1 h-auto">
 						{renderImages(data.bands, data.composites)}

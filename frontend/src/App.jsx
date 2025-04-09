@@ -22,6 +22,7 @@ import {
 	FaBars,
 	FaTimes,
 } from 'react-icons/fa';
+import Correction from './components/Correction';
 
 //-------------------------------------------------------------------------------------
 const App = () => {
@@ -497,6 +498,9 @@ const App = () => {
 									<ThreeMonthCalendar dates={dates} />
 								)}
 								{activeTab === 'Dataa' && <Dataa />}
+								{activeTab === 'DataCorrection' && (
+									<Correction />
+								)}
 								{activeTab === 'gallery' && (
 									<>
 										<div className="relative">

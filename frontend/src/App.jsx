@@ -314,7 +314,19 @@ const App = () => {
 											onClick={() =>
 												setActiveTab('Dataa')
 											}>
-											Complete SR Profile
+											SR Profile
+										</button>
+										<button
+											className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold
+											py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
+												activeTab === 'DataCorrection'
+													? 'bg-blue-800 border border-blue-950'
+													: ''
+											}`}
+											onClick={() =>
+												setActiveTab('DataCorrection')
+											}>
+											Data Correction
 										</button>
 									</div>
 								</div>
@@ -835,6 +847,7 @@ const App = () => {
 															<FaPlay className="mr-2" />
 															Generate Data
 														</button>
+
 													</div>
 												</div>
 											)}

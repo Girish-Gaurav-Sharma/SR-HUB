@@ -1,310 +1,200 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { 
+  calculateRGBDifference, 
+  calculateRGBPercentageDifference, 
+  applyCorrectionToRGB 
+} from '../utils/colorUtils';
+import ImageViewer from './ImageViewer';
+import AnalysisResults from './AnalysisResults';
+import { motion, AnimatePresence } from 'framer-motion';
+import '../styles/image-viewer.css'; // Import additional CSS
 
 const Correction = () => {
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [rgbValue, setRgbValue] = useState(null);
-    const canvasRef = useRef(null);
-    const zoomCanvasRef = useRef(null);
-    const [isSelecting, setIsSelecting] = useState(false);
-    const [selectionStart, setSelectionStart] = useState(null);
-    const [selectionEnd, setSelectionEnd] = useState(null);
-    const [zoomLevel, setZoomLevel] = useState(1); // Zoom level for marking
-    const [zoomFocus, setZoomFocus] = useState({ x: 0, y: 0 }); // Focus point for zoom
+    // Image states
+    const [droneImage, setDroneImage] = useState(null);
+    const [satelliteImage, setSatelliteImage] = useState(null);
+    
+    // RGB values
+    const [droneRGB, setDroneRGB] = useState(null);
+    const [satelliteRGB, setSatelliteRGB] = useState(null);
+    
+    // Analysis results
+    const [rgbDifference, setRgbDifference] = useState(null);
+    const [percentageDifference, setPercentageDifference] = useState(null);
+    const [correctedRgb, setCorrectedRgb] = useState(null);
+    const [error, setError] = useState(null);
+    const [showInstructions, setShowInstructions] = useState(true);
 
-    const [selectedImage2, setSelectedImage2] = useState(null);
-    const [imagePreview2, setImagePreview2] = useState(null);
-    const [rgbValue2, setRgbValue2] = useState(null);
-    const canvasRef2 = useRef(null);
-    const zoomCanvasRef2 = useRef(null);
-    const [isSelecting2, setIsSelecting2] = useState(false);
-    const [selectionStart2, setSelectionStart2] = useState(null);
-    const [selectionEnd2, setSelectionEnd2] = useState(null);
-    const [zoomLevel2, setZoomLevel2] = useState(1); // Zoom level for marking in the second canvas
-
-    const handleImageChange = (event, setSelectedImage, setImagePreview) => {
-        const file = event.target.files[0];
-        if (file) {
-            setSelectedImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleMouseDown = (event, canvasRef, setSelectionStart, setIsSelecting, zoomLevel, setZoomFocus) => {
-        const canvas = canvasRef.current;
-        if (canvas) {
-            const rect = canvas.getBoundingClientRect();
-            const x = (event.clientX - rect.left) / zoomLevel;
-            const y = (event.clientY - rect.top) / zoomLevel;
-            setSelectionStart({ x, y });
-            setZoomFocus({ x, y }); // Set the zoom focus point
-            setIsSelecting(true);
-        }
-    };
-
-    const handleMouseMove = (event, canvasRef, isSelecting, selectionStart, setSelectionEnd, imagePreview, zoomLevel) => {
-        if (isSelecting) {
-            const canvas = canvasRef.current;
-            if (canvas) {
-                const rect = canvas.getBoundingClientRect();
-                const x = (event.clientX - rect.left) / zoomLevel; // Adjust for zoom
-                const y = (event.clientY - rect.top) / zoomLevel; // Adjust for zoom
-                setSelectionEnd({ x, y });
-
-                const ctx = canvas.getContext('2d');
-                const img = new Image();
-                img.src = imagePreview;
-
-                img.onload = () => {
-                    // Clear and redraw the canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.save();
-                    ctx.scale(zoomLevel, zoomLevel); // Apply zoom level
-                    ctx.drawImage(img, 0, 0);
-
-                    // Draw selection rectangle
-                    if (selectionStart) {
-                        ctx.beginPath();
-                        ctx.rect(
-                            selectionStart.x,
-                            selectionStart.y,
-                            x - selectionStart.x,
-                            y - selectionStart.y
-                        );
-                        ctx.strokeStyle = 'blue';
-                        ctx.lineWidth = 2 / zoomLevel; // Adjust line width for zoom
-                        ctx.stroke();
-                    }
-                    ctx.restore(); // Reset transformations
-                };
-            }
-        }
-    };
-
-    const handleMouseUp = (setIsSelecting, selectionStart, selectionEnd, calculateAverageRGB, zoomSelectedArea) => {
-        setIsSelecting(false);
-        if (selectionStart && selectionEnd) {
-            calculateAverageRGB();
-            zoomSelectedArea();
-        }
-    };
-
-    const calculateAverageRGB = (canvasRef, selectionStart, selectionEnd, setRgbValue) => {
-        const canvas = canvasRef.current;
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            const x = Math.min(selectionStart.x, selectionEnd.x);
-            const y = Math.min(selectionStart.y, selectionEnd.y);
-            const width = Math.abs(selectionEnd.x - selectionStart.x);
-            const height = Math.abs(selectionEnd.y - selectionStart.y);
-
-            const imageData = ctx.getImageData(x, y, width, height).data;
-            let r = 0, g = 0, b = 0, count = 0;
-
-            for (let i = 0; i < imageData.length; i += 4) {
-                r += imageData[i];
-                g += imageData[i + 1];
-                b += imageData[i + 2];
-                count++;
-            }
-
-            r = Math.floor(r / count);
-            g = Math.floor(g / count);
-            b = Math.floor(b / count);
-
-            setRgbValue(`rgb(${r}, ${g}, ${b})`);
-        }
-    };
-
+    // Calculate differences when both RGB values are available
     useEffect(() => {
-        if (imagePreview && canvasRef.current) {
-            const canvas = canvasRef.current;
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.src = imagePreview;
-
-            img.onload = () => {
-                // Set canvas dimensions to match the image dimensions
-                canvas.width = img.width;
-                canvas.height = img.height;
-
-                // Clear the canvas and apply zoom
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.save();
-
-                // Translate to the zoom focus point, apply zoom, and translate back
-                ctx.translate(-zoomFocus.x * (zoomLevel - 1), -zoomFocus.y * (zoomLevel - 1));
-                ctx.scale(zoomLevel, zoomLevel);
-
-                // Draw the image
-                ctx.drawImage(img, 0, 0);
-                ctx.restore(); // Reset transformations
-            };
+        if (!droneRGB || !satelliteRGB) {
+            setRgbDifference(null);
+            setPercentageDifference(null);
+            setCorrectedRgb(null);
+            return;
         }
-    }, [imagePreview, zoomLevel, zoomFocus]);
+        
+        try {
+            // Calculate absolute difference
+            const difference = calculateRGBDifference(droneRGB, satelliteRGB);
+            setRgbDifference(difference);
 
+            // Calculate percentage difference
+            const percDiff = calculateRGBPercentageDifference(droneRGB, satelliteRGB);
+            setPercentageDifference(percDiff);
+            
+            // Calculate corrected RGB value
+            const corrected = applyCorrectionToRGB(satelliteRGB, percDiff);
+            setCorrectedRgb(corrected);
+        } catch (err) {
+            console.error("Error calculating differences:", err);
+            setError("Failed to calculate color differences. Please ensure you've selected valid areas in both images.");
+        }
+    }, [droneRGB, satelliteRGB]);
+
+    // Clear error after 5 seconds
     useEffect(() => {
-        if (imagePreview2 && canvasRef2.current) {
-            const canvas = canvasRef2.current;
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.src = imagePreview2;
-            img.onload = () => {
-                canvas.width = img.width * zoomLevel2;
-                canvas.height = img.height * zoomLevel2;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.save();
-                ctx.scale(zoomLevel2, zoomLevel2);
-                ctx.drawImage(img, 0, 0);
-                ctx.restore();
-            };
+        if (error) {
+            const timer = setTimeout(() => {
+                setError(null);
+            }, 5000);
+            
+            return () => clearTimeout(timer);
         }
-    }, [imagePreview2, zoomLevel2]);
+    }, [error]);
 
     return (
-        <div className="image-upload-container">
-            <div className="image-section">
-                {!imagePreview && (
-                    <div className="upload-area">
-                        <input
-                            type="file"
-                            id="image-upload"
-                            accept="image/*"
-                            onChange={(e) => handleImageChange(e, setSelectedImage, setImagePreview)}
-                            style={{ display: 'none' }}
-                        />
-                        <label htmlFor="image-upload" className="upload-button">
-                            Choose Image
-                        </label>
-                    </div>
-                )}
-
-                {imagePreview && (
-                    <div className="image-preview-container">
-                        <h3>Preview:</h3>
-                        <canvas
-                            ref={canvasRef}
-                            className="image-preview"
-                            onMouseDown={(e) => handleMouseDown(e, canvasRef, setSelectionStart, setIsSelecting, zoomLevel, setZoomFocus)}
-                            onMouseMove={(e) => handleMouseMove(e, canvasRef, isSelecting, selectionStart, setSelectionEnd, imagePreview, zoomLevel)}
-                            onMouseUp={() => handleMouseUp(setIsSelecting, selectionStart, selectionEnd, () => calculateAverageRGB(canvasRef, selectionStart, selectionEnd, setRgbValue), () => {})}
-                        />
-                        <div className="zoom-controls">
-                            <label>Zoom:</label>
-                            <input
-                                type="range"
-                                min="1"
-                                max="3"
-                                step="0.1"
-                                value={zoomLevel}
-                                onChange={(e) => setZoomLevel(parseFloat(e.target.value))}
-                            />
+        <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="mb-8"
+            >
+                <div className="flex flex-col md:flex-row md:items-center justify-between">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-4 md:mb-0 flex items-center">
+                        <svg className="w-8 h-8 mr-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 11.955 0 0112 2.944a11.955 11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Satellite-Drone Image Correction Tool
+                    </h1>
+                    
+                    <button 
+                        onClick={() => setShowInstructions(!showInstructions)}
+                        className="bg-blue-100 text-blue-700 px-4 py-2 rounded-md font-medium hover:bg-blue-200 transition-colors flex items-center"
+                    >
+                        {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
+                        <svg 
+                            className={`ml-2 h-5 w-5 transform transition-transform ${showInstructions ? 'rotate-180' : ''}`} 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <AnimatePresence>
+                    {showInstructions && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-4"
+                        >
+                            <h2 className="text-lg font-medium text-blue-800 mb-2">How to use this tool</h2>
+                            <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+                                <li>Upload a drone image (ground truth) and a satellite image of the same geographic area</li>
+                                <li>Use the blue selection box to select the same corresponding area in both images</li>
+                                <li>The tool will calculate color differences and generate correction factors</li>
+                                <li>These correction factors can be applied to future satellite images to achieve more accurate colors</li>
+                            </ol>
+                            
+                            <div className="mt-4 flex items-start">
+                                <svg className="h-5 w-5 text-blue-700 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p className="text-xs text-blue-700">
+                                    For best results, select areas with consistent color and similar features in both images.
+                                    Avoid shadows, reflective surfaces, or areas that may have changed between image captures.
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+            
+            <AnimatePresence>
+                {error && (
+                    <motion.div 
+                        className="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="flex">
+                            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div>
+                                <p className="font-bold">Error</p>
+                                <p>{error}</p>
+                                <button 
+                                    onClick={() => setError(null)}
+                                    className="mt-2 text-sm text-red-700 hover:text-red-900 font-medium underline"
+                                >
+                                    Dismiss
+                                </button>
+                            </div>
                         </div>
-                        {rgbValue && (
-                            <p className="rgb-value">Average RGB Value: {rgbValue}</p>
-                        )}
-                    </div>
+                    </motion.div>
                 )}
+            </AnimatePresence>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <ImageViewer
+                    image={droneImage}
+                    setImage={setDroneImage}
+                    onRgbCalculated={setDroneRGB}
+                    rgbValue={droneRGB}
+                    title="Drone Image (Ground Truth)"
+                    type="drone"
+                    setError={setError}
+                />
+                
+                <ImageViewer
+                    image={satelliteImage}
+                    setImage={setSatelliteImage}
+                    onRgbCalculated={setSatelliteRGB}
+                    rgbValue={satelliteRGB}
+                    title="Satellite Image"
+                    type="satellite" 
+                    setError={setError}
+                />
             </div>
-
-            <div className="image-section">
-                {!imagePreview2 && (
-                    <div className="upload-area">
-                        <input
-                            type="file"
-                            id="image-upload-2"
-                            accept="image/*"
-                            onChange={(e) => handleImageChange(e, setSelectedImage2, setImagePreview2)}
-                            style={{ display: 'none' }}
+            
+            {/* Analysis Results */}
+            <AnimatePresence>
+                {rgbDifference && percentageDifference && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <AnalysisResults 
+                            rgbDifference={rgbDifference}
+                            percentageDifference={percentageDifference}
+                            correctedRgb={correctedRgb}
+                            satelliteRGB={satelliteRGB}
+                            droneRGB={droneRGB}
                         />
-                        <label htmlFor="image-upload-2" className="upload-button">
-                            Choose Image
-                        </label>
-                    </div>
+                    </motion.div>
                 )}
-
-                {imagePreview2 && (
-                    <div className="image-preview-container">
-                        <h3>Preview:</h3>
-                        <canvas
-                            ref={canvasRef2}
-                            className="image-preview"
-                            onMouseDown={(e) => handleMouseDown(e, canvasRef2, setSelectionStart2, setIsSelecting2, zoomLevel2, setZoomFocus)}
-                            onMouseMove={(e) => handleMouseMove(e, canvasRef2, isSelecting2, selectionStart2, setSelectionEnd2, imagePreview2, zoomLevel2)}
-                            onMouseUp={() => handleMouseUp(setIsSelecting2, selectionStart2, selectionEnd2, () => calculateAverageRGB(canvasRef2, selectionStart2, selectionEnd2, setRgbValue2), () => {})}
-                        />
-                        <div className="zoom-controls">
-                            <label>Zoom:</label>
-                            <input
-                                type="range"
-                                min="1"
-                                max="3"
-                                step="0.1"
-                                value={zoomLevel2}
-                                onChange={(e) => setZoomLevel2(parseFloat(e.target.value))}
-                            />
-                        </div>
-                        {rgbValue2 && (
-                            <p className="rgb-value">Average RGB Value: {rgbValue2}</p>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            <style jsx>{`
-                .image-upload-container {
-                    display: flex;
-                    justify-content: space-between;
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    padding: 20px;
-                }
-                .image-section {
-                    flex: 1;
-                    margin: 0 10px;
-                }
-                .upload-area {
-                    border: 2px dashed #ccc;
-                    border-radius: 5px;
-                    padding: 20px;
-                    text-align: center;
-                    margin-bottom: 20px;
-                }
-                .upload-button {
-                    display: inline-block;
-                    padding: 10px 20px;
-                    background-color: #4285f4;
-                    color: white;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    margin-bottom: 10px;
-                }
-                .image-preview-container {
-                    margin-top: 20px;
-                }
-                .image-preview {
-                    max-width: 100%;
-                    max-height: 300px;
-                    border-radius: 4px;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                    cursor: crosshair;
-                }
-                .zoom-controls {
-                    margin-top: 10px;
-                }
-                .zoom-controls label {
-                    margin-right: 10px;
-                }
-                .rgb-value {
-                    margin-top: 10px;
-                    font-size: 16px;
-                    font-weight: bold;
-                }
-            `}</style>
+            </AnimatePresence>
         </div>
     );
 };

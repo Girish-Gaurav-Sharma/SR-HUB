@@ -1,0 +1,182 @@
+/* Custom styling for react-image-crop */
+.ReactCrop {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ReactCrop__crop-selection {
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 3px;
+  box-shadow: 0 0 0 9999em rgba(0, 0, 0, 0.5);
+}
+
+/* Fix for cursor issues */
+.react-transform-component {
+  cursor: grab !important;
+}
+
+.react-transform-component:active {
+  cursor: grabbing !important;
+}
+
+.ReactCrop__drag-handle {
+  cursor: pointer !important;
+}
+
+/* Optimize for touch devices */
+@media (pointer: coarse) {
+  .ReactCrop__drag-handle {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Fix for pan mode */
+.pan-mode .ReactCrop__crop-selection {
+  pointer-events: none;
+}
+
+/* Improve loading indicator */
+.loader {
+  border-top-color: #3b82f6;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Ensure images maintain aspect ratio */
+.image-container img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* OpenSeadragon customizations */
+.openseadragon-container {
+  width: 100%;
+  height: 100%;
+  background-color: #f9fafb !important;
+  outline: none;
+}
+
+/* Custom navigator styling */
+.openseadragon-container .navigator {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  margin: 10px !important;
+}
+
+.openseadragon-container .navigator .highlight {
+  border: 2px solid #3b82f6 !important;
+}
+
+/* Selection overlay styling */
+.selection-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+/* Custom control styling */
+.openseadragon-container .openseadragon-control {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+
+.openseadragon-container .openseadragon-control:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Cursor styles */
+.panning-mode .openseadragon-canvas {
+  cursor: grab !important;
+}
+
+.panning-mode .openseadragon-canvas:active {
+  cursor: grabbing !important;
+}
+
+/* Loading indicator */
+.loader {
+  border-top-color: #3b82f6;
+}
+
+/* Fabric.js canvas styling */
+canvas.upper-canvas {
+  cursor: crosshair !important;
+}
+
+/* OpenSeadragon zoom controls */
+.openseadragon-zoom-control {
+  background-color: rgba(255,255,255,0.8) !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+}
+
+.openseadragon-zoom-control .zoom-in, 
+.openseadragon-zoom-control .zoom-out {
+  color: #333 !important;
+  font-weight: bold !important;
+}
+
+/* Improve canvas rendering */
+.openseadragon-canvas {
+  outline: none !important;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Canvas pixel snapping for sharp rendering */
+.upper-canvas, .lower-canvas {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Improve drag handle visibility */
+.canvas-container .selection-controls {
+  border-radius: 50%;
+  width: 12px !important;
+  height: 12px !important;
+  background-color: white !important;
+  border: 2px solid #3b82f6 !important;
+}
+
+/* Disable text selection during drag operations */
+.openseadragon-viewport {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Check if this CSS exists and is being loaded */
+.selection-box {
+  position: absolute;
+  border: 2px solid blue;
+  background-color: rgba(0, 0, 255, 0.1);
+  cursor: move;
+  z-index: 10;
+}
+
+.selection-box .resize-handle {
+  width: 10px;
+  height: 10px;
+  background-color: blue;
+  position: absolute;
+  z-index: 11;
+}
+
+.selection-box .resize-handle.nw { top: -5px; left: -5px; cursor: nwse-resize; }
+.selection-box .resize-handle.ne { top: -5px; right: -5px; cursor: nesw-resize; }
+.selection-box .resize-handle.sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.selection-box .resize-handle.se { bottom: -5px; right: -5px; cursor: nwse-resize; }

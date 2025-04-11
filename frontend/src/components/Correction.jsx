@@ -1,202 +1,562 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import Cropper from 'react-easy-crop';
 import { 
-  calculateRGBDifference, 
-  calculateRGBPercentageDifference, 
-  applyCorrectionToRGB 
-} from '../utils/colorUtils';
-import ImageViewer from './ImageViewer';
-import AnalysisResults from './AnalysisResults';
-import { motion, AnimatePresence } from 'framer-motion';
-import '../styles/image-viewer.css'; // Import additional CSS
+  FaCloudUploadAlt, FaTrash, FaExclamationTriangle, 
+  FaUndo, FaDownload, FaRedo, FaSatellite, FaPlane
+} from 'react-icons/fa';
 
-const Correction = () => {
-    // Image states
-    const [droneImage, setDroneImage] = useState(null);
-    const [satelliteImage, setSatelliteImage] = useState(null);
+// Constants
+const MAX_FILE_SIZE_MB = 5;
+const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/tiff'];
+
+export default function Correction() {
+  // Satellite image states
+  const [satelliteImageSrc, setSatelliteImageSrc] = useState(null);
+  const [satelliteCrop, setSatelliteCrop] = useState({ x: 0, y: 0 });
+  const [satelliteZoom, setSatelliteZoom] = useState(1);
+  const [satelliteCroppedAreaPixels, setSatelliteCroppedAreaPixels] = useState(null);
+  const [satelliteCroppedImage, setSatelliteCroppedImage] = useState(null);
+  const [satelliteImageDimensions, setSatelliteImageDimensions] = useState({ width: 0, height: 0 });
+  const [satelliteOriginalCroppedImage, setSatelliteOriginalCroppedImage] = useState(null);
+  const [satelliteAverageImage, setSatelliteAverageImage] = useState(null);
+  const [satelliteAvgRgb, setSatelliteAvgRgb] = useState({ r: 0, g: 0, b: 0 });
+
+  // Drone image states
+  const [droneImageSrc, setDroneImageSrc] = useState(null);
+  const [droneCrop, setDroneCrop] = useState({ x: 0, y: 0 });
+  const [droneZoom, setDroneZoom] = useState(1);
+  const [droneCroppedAreaPixels, setDroneCroppedAreaPixels] = useState(null);
+  const [droneCroppedImage, setDroneCroppedImage] = useState(null);
+  const [droneImageDimensions, setDroneImageDimensions] = useState({ width: 0, height: 0 });
+  const [droneOriginalCroppedImage, setDroneOriginalCroppedImage] = useState(null);
+  const [droneAverageImage, setDroneAverageImage] = useState(null);
+  const [droneAvgRgb, setDroneAvgRgb] = useState({ r: 0, g: 0, b: 0 });
+
+  // Shared states
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Clear error after 5 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  // Crop completion handlers
+  const onSatelliteCropComplete = useCallback((_, croppedAreaPixels) => {
+    setSatelliteCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const onDroneCropComplete = useCallback((_, croppedAreaPixels) => {
+    setDroneCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const validateFile = (file) => {
+    if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+      setError(`Unsupported file type. Please use JPG, PNG, WebP or TIFF.`);
+      return false;
+    }
     
-    // RGB values
-    const [droneRGB, setDroneRGB] = useState(null);
-    const [satelliteRGB, setSatelliteRGB] = useState(null);
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`File exceeds ${MAX_FILE_SIZE_MB}MB. Please upload a smaller image.`);
+      return false;
+    }
     
-    // Analysis results
-    const [rgbDifference, setRgbDifference] = useState(null);
-    const [percentageDifference, setPercentageDifference] = useState(null);
-    const [correctedRgb, setCorrectedRgb] = useState(null);
-    const [error, setError] = useState(null);
-    const [showInstructions, setShowInstructions] = useState(true);
+    return true;
+  };
 
-    // Calculate differences when both RGB values are available
-    useEffect(() => {
-        if (!droneRGB || !satelliteRGB) {
-            setRgbDifference(null);
-            setPercentageDifference(null);
-            setCorrectedRgb(null);
-            return;
-        }
-        
-        try {
-            // Calculate absolute difference
-            const difference = calculateRGBDifference(droneRGB, satelliteRGB);
-            setRgbDifference(difference);
+  // Satellite image upload handler
+  const handleSatelliteImageUpload = (file) => {
+    if (!file) return;
+    
+    setSatelliteCroppedImage(null);
+    setError(null);
+    
+    if (!validateFile(file)) return;
+    
+    setIsLoading(true);
+    const reader = new FileReader();
+    
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        setSatelliteImageDimensions({
+          width: img.width,
+          height: img.height
+        });
+        setIsLoading(false);
+      };
+      img.src = reader.result;
+      setSatelliteImageSrc(reader.result);
+    };
+    
+    reader.onerror = () => {
+      setError('Failed to read file');
+      setIsLoading(false);
+    };
+    
+    reader.readAsDataURL(file);
+  };
 
-            // Calculate percentage difference
-            const percDiff = calculateRGBPercentageDifference(droneRGB, satelliteRGB);
-            setPercentageDifference(percDiff);
-            
-            // Calculate corrected RGB value
-            const corrected = applyCorrectionToRGB(satelliteRGB, percDiff);
-            setCorrectedRgb(corrected);
-        } catch (err) {
-            console.error("Error calculating differences:", err);
-            setError("Failed to calculate color differences. Please ensure you've selected valid areas in both images.");
-        }
-    }, [droneRGB, satelliteRGB]);
+  // Drone image upload handler
+  const handleDroneImageUpload = (file) => {
+    if (!file) return;
+    
+    setDroneCroppedImage(null);
+    setError(null);
+    
+    if (!validateFile(file)) return;
+    
+    setIsLoading(true);
+    const reader = new FileReader();
+    
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        setDroneImageDimensions({
+          width: img.width,
+          height: img.height
+        });
+        setIsLoading(false);
+      };
+      img.src = reader.result;
+      setDroneImageSrc(reader.result);
+    };
+    
+    reader.onerror = () => {
+      setError('Failed to read file');
+      setIsLoading(false);
+    };
+    
+    reader.readAsDataURL(file);
+  };
 
-    // Clear error after 5 seconds
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => {
-                setError(null);
-            }, 5000);
-            
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
+  const handleSatelliteFileChange = (e) => {
+    if (e.target.files?.[0]) handleSatelliteImageUpload(e.target.files[0]);
+  };
 
-    return (
-        <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="mb-8"
-            >
-                <div className="flex flex-col md:flex-row md:items-center justify-between">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-4 md:mb-0 flex items-center">
-                        <svg className="w-8 h-8 mr-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 11.955 0 0112 2.944a11.955 11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                        Satellite-Drone Image Correction Tool
-                    </h1>
-                    
-                    <button 
-                        onClick={() => setShowInstructions(!showInstructions)}
-                        className="bg-blue-100 text-blue-700 px-4 py-2 rounded-md font-medium hover:bg-blue-200 transition-colors flex items-center"
-                    >
-                        {showInstructions ? 'Hide Instructions' : 'Show Instructions'}
-                        <svg 
-                            className={`ml-2 h-5 w-5 transform transition-transform ${showInstructions ? 'rotate-180' : ''}`} 
-                            fill="none" 
-                            viewBox="0 0 24 24" 
-                            stroke="currentColor"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                </div>
-                
-                <AnimatePresence>
-                    {showInstructions && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-4"
-                        >
-                            <h2 className="text-lg font-medium text-blue-800 mb-2">How to use this tool</h2>
-                            <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
-                                <li>Upload a drone image (ground truth) and a satellite image of the same geographic area</li>
-                                <li>Use the blue selection box to select the same corresponding area in both images</li>
-                                <li>The tool will calculate color differences and generate correction factors</li>
-                                <li>These correction factors can be applied to future satellite images to achieve more accurate colors</li>
-                            </ol>
-                            
-                            <div className="mt-4 flex items-start">
-                                <svg className="h-5 w-5 text-blue-700 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p className="text-xs text-blue-700">
-                                    For best results, select areas with consistent color and similar features in both images.
-                                    Avoid shadows, reflective surfaces, or areas that may have changed between image captures.
-                                </p>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
-            
-            <AnimatePresence>
-                {error && (
-                    <motion.div 
-                        className="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <div className="flex">
-                            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <div>
-                                <p className="font-bold">Error</p>
-                                <p>{error}</p>
-                                <button 
-                                    onClick={() => setError(null)}
-                                    className="mt-2 text-sm text-red-700 hover:text-red-900 font-medium underline"
-                                >
-                                    Dismiss
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+  const handleDroneFileChange = (e) => {
+    if (e.target.files?.[0]) handleDroneImageUpload(e.target.files[0]);
+  };
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <ImageViewer
-                    image={droneImage}
-                    setImage={setDroneImage}
-                    onRgbCalculated={setDroneRGB}
-                    rgbValue={droneRGB}
-                    title="Drone Image (Ground Truth)"
-                    type="drone"
-                    setError={setError}
-                />
-                
-                <ImageViewer
-                    image={satelliteImage}
-                    setImage={setSatelliteImage}
-                    onRgbCalculated={setSatelliteRGB}
-                    rgbValue={satelliteRGB}
-                    title="Satellite Image"
-                    type="satellite" 
-                    setError={setError}
-                />
-            </div>
-            
-            {/* Analysis Results */}
-            <AnimatePresence>
-                {rgbDifference && percentageDifference && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <AnalysisResults 
-                            rgbDifference={rgbDifference}
-                            percentageDifference={percentageDifference}
-                            correctedRgb={correctedRgb}
-                            satelliteRGB={satelliteRGB}
-                            droneRGB={droneRGB}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+  const createImage = (url) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = (error) => reject(error);
+      img.src = url;
+    });
+
+  const getCroppedImg = async (imageSrc, pixelCrop) => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+    
+    // Draw the cropped area
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height
     );
-};
 
-export default Correction;
+    // Capture the original cropped image
+    const originalDataUrl = canvas.toDataURL('image/png');
+
+    // Calculate average color
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let totalR = 0, totalG = 0, totalB = 0;
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      totalR += imageData.data[i];
+      totalG += imageData.data[i + 1];
+      totalB += imageData.data[i + 2];
+    }
+    const count = imageData.data.length / 4;
+    const avgR = Math.round(totalR / count);
+    const avgG = Math.round(totalG / count);
+    const avgB = Math.round(totalB / count);
+
+    // Apply average color
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      imageData.data[i] = avgR;
+      imageData.data[i + 1] = avgG;
+      imageData.data[i + 2] = avgB;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // Capture the averaged image
+    const averagedDataUrl = canvas.toDataURL('image/png');
+
+    return {
+      originalDataUrl,
+      averagedDataUrl,
+      avgR,
+      avgG,
+      avgB
+    };
+  };
+
+  const showSatelliteCroppedImage = useCallback(async () => {
+    if (!satelliteCroppedAreaPixels) return;
+    
+    try {
+      setIsLoading(true);
+      const { originalDataUrl, averagedDataUrl, avgR, avgG, avgB } = await getCroppedImg(
+        satelliteImageSrc, 
+        satelliteCroppedAreaPixels
+      );
+      setSatelliteOriginalCroppedImage(originalDataUrl);
+      setSatelliteAverageImage(averagedDataUrl);
+      setSatelliteAvgRgb({ r: avgR, g: avgG, b: avgB });
+    } catch (e) {
+      setError('Cropping failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [satelliteImageSrc, satelliteCroppedAreaPixels]);
+  
+  const showDroneCroppedImage = useCallback(async () => {
+    if (!droneCroppedAreaPixels) return;
+    
+    try {
+      setIsLoading(true);
+      const { originalDataUrl, averagedDataUrl, avgR, avgG, avgB } = await getCroppedImg(
+        droneImageSrc, 
+        droneCroppedAreaPixels
+      );
+      setDroneOriginalCroppedImage(originalDataUrl);
+      setDroneAverageImage(averagedDataUrl);
+      setDroneAvgRgb({ r: avgR, g: avgG, b: avgB });
+    } catch (e) {
+      setError('Cropping failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [droneImageSrc, droneCroppedAreaPixels]);
+  
+  const resetSatelliteEditor = () => {
+    setSatelliteCrop({ x: 0, y: 0 });
+    setSatelliteZoom(1);
+  };
+  
+  const resetDroneEditor = () => {
+    setDroneCrop({ x: 0, y: 0 });
+    setDroneZoom(1);
+  };
+  
+  const resetSatelliteAll = () => {
+    setError(null);
+    setSatelliteImageSrc(null);
+    setSatelliteCroppedImage(null);
+    setSatelliteOriginalCroppedImage(null);
+    setSatelliteAverageImage(null);
+    setSatelliteAvgRgb({ r: 0, g: 0, b: 0 });
+    resetSatelliteEditor();
+  };
+  
+  const resetDroneAll = () => {
+    setError(null);
+    setDroneImageSrc(null);
+    setDroneCroppedImage(null);
+    setDroneOriginalCroppedImage(null);
+    setDroneAverageImage(null);
+    setDroneAvgRgb({ r: 0, g: 0, b: 0 });
+    resetDroneEditor();
+  };
+
+  return (
+    <div className="backdrop-blur-lg bg-white/50 text-gray-800 p-6 md:p-8 overflow-y-auto rounded-3xl shadow-2xl w-full max-w-5xl mx-auto my-6 border border-gray-100">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 pb-2 border-b border-gray-200">Image Comparison</h1>
+
+      {error && (
+        <div className="mt-4 mb-5 text-red-600 flex items-center bg-red-50 p-4 rounded-lg border-l-4 border-red-500 shadow-sm animate-pulse">
+          <FaExclamationTriangle className="mr-3 flex-shrink-0" /> 
+          <span className="font-medium">{error}</span>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="flex justify-center items-center my-8 py-4">
+          <div className="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-blue-600"></div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Satellite Image Section */}
+        <div className="border border-gray-200 p-5 rounded-xl shadow-md bg-white">
+          <div className="flex items-center mb-4 pb-2 border-b border-gray-200">
+            <FaSatellite className="text-blue-600 mr-3 text-xl" />
+            <h2 className="text-xl font-bold text-gray-800">Satellite Image</h2>
+          </div>
+
+          {!satelliteImageSrc && !isLoading && (
+            <div className="p-8 md:p-10 border-dashed border-2 border-blue-300 rounded-xl mb-6 text-center bg-gradient-to-b from-white/80 to-blue-50/60 shadow-md hover:shadow-lg hover:border-blue-400 transition-all duration-300 group">
+              <FaCloudUploadAlt className="mx-auto text-4xl md:text-5xl text-blue-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
+              <p className="mb-5 text-gray-700 font-medium">Upload your satellite image</p>
+              <input
+                type="file"
+                onChange={handleSatelliteFileChange}
+                accept={ACCEPTED_FILE_TYPES.join(',')}
+                className="hidden"
+                id="satelliteFileInput"
+              />
+              <label
+                htmlFor="satelliteFileInput"
+                className="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
+              >
+                Select Image
+              </label>
+            </div>
+          )}
+
+          {satelliteImageSrc && !isLoading && (
+            <>
+              <div className="relative w-full h-[20rem] border rounded-xl overflow-hidden mb-4 bg-gray-100 shadow-inner">
+                <Cropper
+                  image={satelliteImageSrc}
+                  crop={satelliteCrop}
+                  zoom={satelliteZoom}
+                  maxZoom={10}
+                  aspect={1}
+                  onCropChange={setSatelliteCrop}
+                  onZoomChange={setSatelliteZoom}
+                  onCropComplete={onSatelliteCropComplete}
+                />
+              </div>
+              
+              {satelliteImageDimensions.width > 0 && (
+                <div className="mb-3 text-sm text-gray-600 bg-gray-50 inline-block px-3 py-1 rounded-md">
+                  Original: {satelliteImageDimensions.width} × {satelliteImageDimensions.height}px
+                </div>
+              )}
+              
+              <div className="flex flex-wrap items-center gap-2 mb-4 mt-2">
+                <div className="flex space-x-2 mr-auto">
+                  <button
+                    onClick={() => setSatelliteZoom(Math.min(10, satelliteZoom + 0.2))}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
+                    title="Zoom in"
+                  >
+                    Zoom In
+                  </button>
+                  <button
+                    onClick={() => setSatelliteZoom(Math.max(1, satelliteZoom - 0.2))}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
+                    title="Zoom out"
+                  >
+                    Zoom Out
+                  </button>
+                  <button
+                    onClick={resetSatelliteEditor}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
+                    title="Reset changes"
+                  >
+                    <FaUndo className="inline mr-1 -mt-0.5" /> Reset
+                  </button>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={showSatelliteCroppedImage}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
+                  >
+                    Crop Image
+                  </button>
+                  <button
+                    onClick={resetSatelliteAll}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
+                  >
+                    <FaTrash className="inline mr-1 -mt-0.5" /> Cancel
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {satelliteOriginalCroppedImage && !isLoading && (
+            <div className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100">
+              <h3 className="font-semibold text-lg text-gray-800 mb-2 pb-1 border-b border-gray-100">Cropped Pixels</h3>
+              <img
+                src={satelliteOriginalCroppedImage}
+                alt="Satellite Cropped"
+                className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+              />
+            </div>
+          )}
+
+          {satelliteAverageImage && !isLoading && (
+            <div className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100">
+              <h3 className="font-semibold text-lg text-gray-800 mb-2 pb-1 border-b border-gray-100">Averaged Pixels</h3>
+              <img
+                src={satelliteAverageImage}
+                alt="Satellite Averaged"
+                className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+              />
+              <p className="text-gray-700 font-medium text-sm">
+                Average RGB: R = {satelliteAvgRgb.r}, G = {satelliteAvgRgb.g}, B = {satelliteAvgRgb.b}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Drone Image Section */}
+        <div className="border border-gray-200 p-5 rounded-xl shadow-md bg-white">
+          <div className="flex items-center mb-4 pb-2 border-b border-gray-200">
+            <FaPlane className="text-green-600 mr-3 text-xl" />
+            <h2 className="text-xl font-bold text-gray-800">Drone Image</h2>
+          </div>
+
+          {!droneImageSrc && !isLoading && (
+            <div className="p-8 md:p-10 border-dashed border-2 border-green-300 rounded-xl mb-6 text-center bg-gradient-to-b from-white/80 to-green-50/60 shadow-md hover:shadow-lg hover:border-green-400 transition-all duration-300 group">
+              <FaCloudUploadAlt className="mx-auto text-4xl md:text-5xl text-green-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
+              <p className="mb-5 text-gray-700 font-medium">Upload your drone image</p>
+              <input
+                type="file"
+                onChange={handleDroneFileChange}
+                accept={ACCEPTED_FILE_TYPES.join(',')}
+                className="hidden"
+                id="droneFileInput"
+              />
+              <label
+                htmlFor="droneFileInput"
+                className="cursor-pointer inline-block bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
+              >
+                Select Image
+              </label>
+            </div>
+          )}
+
+          {droneImageSrc && !isLoading && (
+            <>
+              <div className="relative w-full h-[20rem] border rounded-xl overflow-hidden mb-4 bg-gray-100 shadow-inner">
+                <Cropper
+                  image={droneImageSrc}
+                  crop={droneCrop}
+                  zoom={droneZoom}
+                  maxZoom={10}
+                  aspect={1}
+                  onCropChange={setDroneCrop}
+                  onZoomChange={setDroneZoom}
+                  onCropComplete={onDroneCropComplete}
+                />
+              </div>
+              
+              {droneImageDimensions.width > 0 && (
+                <div className="mb-3 text-sm text-gray-600 bg-gray-50 inline-block px-3 py-1 rounded-md">
+                  Original: {droneImageDimensions.width} × {droneImageDimensions.height}px
+                </div>
+              )}
+              
+              <div className="flex flex-wrap items-center gap-2 mb-4 mt-2">
+                <div className="flex space-x-2 mr-auto">
+                  <button
+                    onClick={() => setDroneZoom(Math.min(10, droneZoom + 0.2))}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
+                    title="Zoom in"
+                  >
+                    Zoom In
+                  </button>
+                  <button
+                    onClick={() => setDroneZoom(Math.max(1, droneZoom - 0.2))}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
+                    title="Zoom out"
+                  >
+                    Zoom Out
+                  </button>
+                  <button
+                    onClick={resetDroneEditor}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
+                    title="Reset changes"
+                  >
+                    <FaUndo className="inline mr-1 -mt-0.5" /> Reset
+                  </button>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={showDroneCroppedImage}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
+                  >
+                    Crop Image
+                  </button>
+                  <button
+                    onClick={resetDroneAll}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
+                  >
+                    <FaTrash className="inline mr-1 -mt-0.5" /> Cancel
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {droneOriginalCroppedImage && !isLoading && (
+            <div className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100">
+              <h3 className="font-semibold text-lg text-gray-800 mb-2 pb-1 border-b border-gray-100">Cropped Pixels</h3>
+              <img
+                src={droneOriginalCroppedImage}
+                alt="Drone Cropped"
+                className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+              />
+            </div>
+          )}
+
+          {droneAverageImage && !isLoading && (
+            <div className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100">
+              <h3 className="font-semibold text-lg text-gray-800 mb-2 pb-1 border-b border-gray-100">Averaged Pixels</h3>
+              <img
+                src={droneAverageImage}
+                alt="Drone Averaged"
+                className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+              />
+              <p className="text-gray-700 font-medium text-sm">
+                Average RGB: R = {droneAvgRgb.r}, G = {droneAvgRgb.g}, B = {droneAvgRgb.b}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {(satelliteAverageImage && droneAverageImage) && (
+        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <h2 className="font-semibold text-xl text-gray-800 mb-4 pb-2 border-b border-gray-100">Color Comparison</h2>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-medium text-gray-700 mb-2">Satellite Image</h3>
+              <div className="flex items-center space-x-3">
+                <div 
+                  className="w-12 h-12 rounded-md shadow-md border border-gray-200" 
+                  style={{backgroundColor: `rgb(${satelliteAvgRgb.r}, ${satelliteAvgRgb.g}, ${satelliteAvgRgb.b})`}}
+                ></div>
+                <span className="font-mono text-sm">
+                  RGB({satelliteAvgRgb.r}, {satelliteAvgRgb.g}, {satelliteAvgRgb.b})
+                </span>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-700 mb-2">Drone Image</h3>
+              <div className="flex items-center space-x-3">
+                <div 
+                  className="w-12 h-12 rounded-md shadow-md border border-gray-200" 
+                  style={{backgroundColor: `rgb(${droneAvgRgb.r}, ${droneAvgRgb.g}, ${droneAvgRgb.b})`}}
+                ></div>
+                <span className="font-mono text-sm">
+                  RGB({droneAvgRgb.r}, {droneAvgRgb.g}, {droneAvgRgb.b})
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

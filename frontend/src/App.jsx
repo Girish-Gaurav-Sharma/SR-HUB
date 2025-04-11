@@ -24,16 +24,6 @@ import {
 } from 'react-icons/fa';
 import Correction from './components/Correction';
 
-// Import necessary scripts for OpenSeadragon
-import OpenSeadragon from 'openseadragon';
-import 'fabric'; // Import fabric.js for its side effects
-import './plugins/openseadragon-fabricjs-overlay';
-import './plugins/openseadragon-selection';
-
-// Make available globally for the plugin to use
-window.OpenSeadragon = OpenSeadragon;
-// No need to set window.fabric as it's already attached to window
-
 //-------------------------------------------------------------------------------------
 const App = () => {
 	const [showGallery, setShowGallery] = useState(false);

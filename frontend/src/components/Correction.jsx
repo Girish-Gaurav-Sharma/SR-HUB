@@ -2,8 +2,9 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import { 
   FaCloudUploadAlt, FaTrash, FaExclamationTriangle, 
-  FaUndo, FaDownload, FaRedo, FaSatellite, FaPlane
+  FaUndo, FaDownload, FaWrench, FaSatellite, FaPlane, FaChartBar
 } from 'react-icons/fa';
+import Analysis from './Analysis';
 
 // Constants
 const MAX_FILE_SIZE_MB = 5;
@@ -20,6 +21,7 @@ export default function Correction() {
   const [satelliteOriginalCroppedImage, setSatelliteOriginalCroppedImage] = useState(null);
   const [satelliteAverageImage, setSatelliteAverageImage] = useState(null);
   const [satelliteAvgRgb, setSatelliteAvgRgb] = useState({ r: 0, g: 0, b: 0 });
+  const [satelliteCorrectedImage, setSatelliteCorrectedImage] = useState(null);
 
   // Drone image states
   const [droneImageSrc, setDroneImageSrc] = useState(null);
@@ -35,6 +37,7 @@ export default function Correction() {
   // Shared states
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   // Clear error after 5 seconds
   useEffect(() => {
@@ -262,6 +265,7 @@ export default function Correction() {
     setSatelliteOriginalCroppedImage(null);
     setSatelliteAverageImage(null);
     setSatelliteAvgRgb({ r: 0, g: 0, b: 0 });
+    setSatelliteCorrectedImage(null);
     resetSatelliteEditor();
   };
   
@@ -274,6 +278,121 @@ export default function Correction() {
     setDroneAvgRgb({ r: 0, g: 0, b: 0 });
     resetDroneEditor();
   };
+
+  // Calculate RGB differences between satellite and drone images
+  const calculateRgbDifference = () => {
+    if (!satelliteAvgRgb || !droneAvgRgb) return null;
+    
+    return {
+      r: Math.abs(satelliteAvgRgb.r - droneAvgRgb.r),
+      g: Math.abs(satelliteAvgRgb.g - droneAvgRgb.g),
+      b: Math.abs(satelliteAvgRgb.b - droneAvgRgb.b)
+    };
+  };
+
+  // Calculate the overall color difference (Euclidean distance in RGB space)
+  const calculateColorDifference = () => {
+    if (!satelliteAvgRgb || !droneAvgRgb) return null;
+    
+    const dr = satelliteAvgRgb.r - droneAvgRgb.r;
+    const dg = satelliteAvgRgb.g - droneAvgRgb.g;
+    const db = satelliteAvgRgb.b - droneAvgRgb.b;
+    
+    // Euclidean distance in RGB space
+    return Math.sqrt(dr*dr + dg*dg + db*db).toFixed(2);
+  };
+
+  // Calculate RGB differences between satellite and drone images as percentages
+  const calculateRgbDifferencePercentage = () => {
+    if (!satelliteAvgRgb || !droneAvgRgb) return null;
+    
+    // Formula: ((satellite - drone) / drone) * 100%
+    // Negative values indicate satellite is lower than drone
+    // Positive values indicate satellite is higher than drone
+    return {
+      r: droneAvgRgb.r === 0 ? 0 : (((satelliteAvgRgb.r - droneAvgRgb.r) / droneAvgRgb.r) * 100).toFixed(1),
+      g: droneAvgRgb.g === 0 ? 0 : (((satelliteAvgRgb.g - droneAvgRgb.g) / droneAvgRgb.g) * 100).toFixed(1),
+      b: droneAvgRgb.b === 0 ? 0 : (((satelliteAvgRgb.b - droneAvgRgb.b) / droneAvgRgb.b) * 100).toFixed(1)
+    };
+  };
+
+  // Calculate the overall color difference as a percentage
+  const calculateColorDifferencePercentage = () => {
+    if (!satelliteAvgRgb || !droneAvgRgb) return null;
+    
+    // Calculate the drone's color magnitude (to avoid division by zero)
+    const droneMagnitude = Math.sqrt(
+      droneAvgRgb.r * droneAvgRgb.r + 
+      droneAvgRgb.g * droneAvgRgb.g + 
+      droneAvgRgb.b * droneAvgRgb.b
+    );
+    
+    if (droneMagnitude === 0) return "0.0";
+    
+    const dr = droneAvgRgb.r - satelliteAvgRgb.r;
+    const dg = droneAvgRgb.g - satelliteAvgRgb.g;
+    const db = droneAvgRgb.b - satelliteAvgRgb.b;
+    
+    // Euclidean distance in RGB space
+    const distance = Math.sqrt(dr*dr + dg*dg + db*db);
+    
+    // Calculate percentage relative to drone's color magnitude
+    return ((distance / droneMagnitude) * 100).toFixed(1);
+  };
+
+  const applyCorrection = useCallback(async () => {
+    if (!satelliteImageSrc || !satelliteAvgRgb || !droneAvgRgb) return;
+    
+    setIsLoading(true);
+    try {
+      // Create a new image from the satellite image
+      const img = await createImage(satelliteImageSrc);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas dimensions to match the image
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      // Draw the original image onto the canvas
+      ctx.drawImage(img, 0, 0);
+      
+      // Get the image data
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      
+      // Calculate percentage differences for correction
+      const rgbDiff = calculateRgbDifferencePercentage();
+      
+      // Apply correction to each pixel
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        // Apply correction based on the percentage difference
+        // For each channel: adjust pixel by the percentage difference relative to drone value
+        const rAdjustment = (parseFloat(rgbDiff.r) / 100) * droneAvgRgb.r;
+        const gAdjustment = (parseFloat(rgbDiff.g) / 100) * droneAvgRgb.g;
+        const bAdjustment = (parseFloat(rgbDiff.b) / 100) * droneAvgRgb.b;
+        
+        // If satellite < drone (negative %), increase value; if satellite > drone (positive %), decrease value
+        imageData.data[i] = Math.min(255, Math.max(0, Math.round(imageData.data[i] - rAdjustment)));
+        imageData.data[i + 1] = Math.min(255, Math.max(0, Math.round(imageData.data[i + 1] - gAdjustment)));
+        imageData.data[i + 2] = Math.min(255, Math.max(0, Math.round(imageData.data[i + 2] - bAdjustment)));
+        // Alpha channel (i + 3) remains unchanged
+      }
+      
+      // Put the corrected image data back to the canvas
+      ctx.putImageData(imageData, 0, 0);
+      
+      // Get the data URL of the corrected image
+      const correctedDataUrl = canvas.toDataURL('image/png');
+      
+      // Set the corrected image
+      setSatelliteCorrectedImage(correctedDataUrl);
+    } catch (e) {
+      setError('Image correction failed');
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [satelliteImageSrc, satelliteAvgRgb, droneAvgRgb, calculateRgbDifferencePercentage]);
 
   return (
     <div className="backdrop-blur-lg bg-white/50 text-gray-800 p-6 md:p-8 overflow-y-auto rounded-3xl shadow-2xl w-full max-w-5xl mx-auto my-6 border border-gray-100">
@@ -529,7 +648,7 @@ export default function Correction() {
       {(satelliteAverageImage && droneAverageImage) && (
         <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <h2 className="font-semibold text-xl text-gray-800 mb-4 pb-2 border-b border-gray-100">Color Comparison</h2>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <h3 className="font-medium text-gray-700 mb-2">Satellite Image</h3>
               <div className="flex items-center space-x-3">
@@ -554,8 +673,104 @@ export default function Correction() {
                 </span>
               </div>
             </div>
+            <div>
+              <h3 className="font-medium text-gray-700 mb-2">RGB Difference</h3>
+              {calculateRgbDifferencePercentage() && (
+                <>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div 
+                      className="w-12 h-12 rounded-md shadow-md border border-gray-200" 
+                      style={{
+                        background: `linear-gradient(135deg, 
+                          rgb(${satelliteAvgRgb.r}, ${satelliteAvgRgb.g}, ${satelliteAvgRgb.b}) 0%, 
+                          rgb(${droneAvgRgb.r}, ${droneAvgRgb.g}, ${droneAvgRgb.b}) 100%)`
+                      }}
+                    ></div>
+                    <div className="font-mono text-sm">
+                      <div>R: {calculateRgbDifferencePercentage().r}%</div>
+                      <div>G: {calculateRgbDifferencePercentage().g}%</div>
+                      <div>B: {calculateRgbDifferencePercentage().b}%</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                    <span className="text-gray-700 font-medium">Total difference: </span>
+                    <span className="font-mono">{calculateColorDifferencePercentage()}%</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={applyCorrection}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-md font-medium flex items-center"
+              disabled={isLoading}
+            >
+              <FaWrench className="mr-2" /> Apply Correction to Satellite Image
+            </button>
           </div>
         </div>
+      )}
+
+      {satelliteCorrectedImage && (
+        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <h2 className="font-semibold text-xl text-gray-800 mb-4 pb-2 border-b border-gray-100">Before & After Comparison</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-medium text-gray-700 mb-3">Original Satellite Image</h3>
+              <div className="relative border border-gray-200 rounded-lg overflow-hidden shadow-md">
+                <img
+                  src={satelliteImageSrc}
+                  alt="Original Satellite"
+                  className="w-full object-contain"
+                />
+              </div>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-700 mb-3">Corrected Satellite Image</h3>
+              <div className="relative border border-gray-200 rounded-lg overflow-hidden shadow-md">
+                <img
+                  src={satelliteCorrectedImage}
+                  alt="Corrected Satellite"
+                  className="w-full object-contain"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+            <p>The corrected image adjusts RGB values to match the drone image's color characteristics. Adjustment percentages are shown in the color comparison section above.</p>
+          </div>
+          <div className="flex justify-end mt-3">
+            <a
+              href={satelliteCorrectedImage}
+              download="corrected_satellite_image.png"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 shadow-sm font-medium flex items-center"
+            >
+              <FaDownload className="mr-2" /> Download Corrected Image
+            </a>
+          </div>
+        </div>
+      )}
+
+      {(satelliteAverageImage && droneAverageImage) && !showAnalysis && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => setShowAnalysis(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-md font-medium flex items-center"
+          >
+            <FaChartBar className="mr-2" /> View Advanced Analysis
+          </button>
+        </div>
+      )}
+
+      {showAnalysis && (
+        <Analysis 
+          satelliteData={satelliteAvgRgb}
+          droneData={droneAvgRgb}
+          satelliteImageSrc={satelliteImageSrc}
+          satelliteCorrectedImage={satelliteCorrectedImage}
+          onBack={() => setShowAnalysis(false)}
+        />
       )}
     </div>
   );

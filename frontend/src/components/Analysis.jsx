@@ -8,7 +8,11 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
     corrected: {}
   });
   const [loading, setLoading] = useState(false);
-  
+  const [processingStatus, setProcessingStatus] = useState('');
+  const [processedIndices, setProcessedIndices] = useState([]);
+  const [totalIndices, setTotalIndices] = useState(0);
+  const [showHeatmaps, setShowHeatmaps] = useState(false);
+
   // References to hold the original loaded images
   const satelliteImageRef = useRef(null);
   const correctedImageRef = useRef(null);
@@ -154,6 +158,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
     
     const generateHeatmaps = async () => {
       setLoading(true);
+      setProcessingStatus('Loading images...');
       
       try {
         // Load images
@@ -174,7 +179,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
         correctedImageRef.current = correctedImg;
         
         // Process images
-        const processImage = (img, imageType) => {
+        const processImage = async (img, imageType) => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
@@ -185,10 +190,12 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
           
-          // Create heatmaps for each index
+          // Create heatmaps for each index - prioritize the most important ones first
           const indices = [
-            // Vegetation indices
-            'vari', 'exg', 'exr', 'cive', 'tgi', 'gli', 'ngrdi',
+            // High priority - vegetation indices people use most
+            'vari', 'exg', 'gli', 
+            // Medium priority
+            'exr', 'cive', 'tgi', 'ngrdi',
             // Soil indices
             'sci',
             // Urban/Surface indices
@@ -196,9 +203,20 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
             // Color/Light indices
             'bi', 'nbi', 'hue', 'sat', 'intensity'
           ];
+          
+          setTotalIndices(indices.length * 2); // For both original and corrected
+          setProcessedIndices([]);
+          
           const heatmapResults = {};
           
-          for (const indexType of indices) {
+          // Process indices one by one with yielding to the UI thread
+          for (let i = 0; i < indices.length; i++) {
+            const indexType = indices[i];
+            setProcessingStatus(`Processing ${indexType} (${i+1}/${indices.length})...`);
+            
+            // Yield to UI thread before processing each index
+            await new Promise(resolve => setTimeout(resolve, 0));
+            
             const heatmapCanvas = document.createElement('canvas');
             const heatmapCtx = heatmapCanvas.getContext('2d');
             
@@ -208,103 +226,119 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
             const heatmapImageData = ctx.createImageData(img.width, img.height);
             const heatmapData = heatmapImageData.data;
             
-            for (let i = 0; i < data.length; i += 4) {
-              const r = data[i];
-              const g = data[i + 1];
-              const b = data[i + 2];
+            // Process in smaller batches
+            const batchSize = 10000; // Process 10000 pixels at a time
+            const totalPixels = data.length / 4;
+            
+            for (let pixelStart = 0; pixelStart < totalPixels; pixelStart += batchSize) {
+              await new Promise(resolve => requestAnimationFrame(resolve));
               
-              const R = r / 255;
-              const G = g / 255;
-              const B = b / 255;
+              const endPixel = Math.min(pixelStart + batchSize, totalPixels);
               
-              // Calculate index value for this pixel
-              let indexValue;
-              
-              switch (indexType) {
-                // Vegetation indices
-                case 'vari':
-                  indexValue = (G + R - B) !== 0 ? (G - R) / (G + R - B) : 0;
-                  break;
-                case 'exg':
-                  indexValue = 2 * G - R - B;
-                  break;
-                case 'exr':
-                  indexValue = 1.4 * R - G;
-                  break;
-                case 'cive':
-                  indexValue = 0.441 * R - 0.811 * G + 0.385 * B + 18.78745;
-                  break;
-                case 'tgi':
-                  indexValue = -0.5 * (190 * (R - G) - 120 * (R - B));
-                  break;
-                case 'gli':
-                  indexValue = (2 * G + R + B) !== 0 ? (2 * G - R - B) / (2 * G + R + B) : 0;
-                  break;
-                case 'ngrdi':
-                  indexValue = (G + R) !== 0 ? (G - R) / (G + R) : 0;
-                  break;
+              for (let pixel = pixelStart; pixel < endPixel; pixel++) {
+                const i = pixel * 4;
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
                 
-                // Soil indices
-                case 'sci':
-                  indexValue = (R + G + B) !== 0 ? (R - G) / (R + G + B) : 0;
-                  break;
+                const R = r / 255;
+                const G = g / 255;
+                const B = b / 255;
                 
-                // Urban/Surface indices
-                case 'rednessIndex':
-                  indexValue = (B * G) !== 0 ? (R * R) / (B * G) : 0;
-                  break;
-                case 'bluenessIndex':
-                  indexValue = (R * G) !== 0 ? (B * B) / (R * G) : 0;
-                  break;
-                case 'greennessIndex':
-                  indexValue = (R * B) !== 0 ? (G * G) / (R * B) : 0;
-                  break;
-                case 'colorRatioR':
-                  indexValue = (G + B) !== 0 ? R / (G + B) : 0;
-                  break;
-                case 'colorRatioG':
-                  indexValue = (R + B) !== 0 ? G / (R + B) : 0;
-                  break;
+                // Calculate index value for this pixel
+                let indexValue;
                 
-                // Color/Light indices
-                case 'bi':
-                  indexValue = Math.sqrt(R*R + G*G + B*B);
-                  break;
-                case 'nbi':
-                  indexValue = (R + G + B) / 3;
-                  break;
-                case 'hue':
-                  indexValue = Math.atan2(Math.sqrt(3)*(G - B), 2*R - G - B);
-                  break;
-                case 'sat':
-                  indexValue = Math.max(R, G, B) - Math.min(R, G, B);
-                  break;
-                case 'intensity':
-                  indexValue = (R + G + B) / 3;
-                  break;
-                default:
-                  indexValue = 0;
+                switch (indexType) {
+                  // Vegetation indices
+                  case 'vari':
+                    indexValue = (G + R - B) !== 0 ? (G - R) / (G + R - B) : 0;
+                    break;
+                  case 'exg':
+                    indexValue = 2 * G - R - B;
+                    break;
+                  case 'exr':
+                    indexValue = 1.4 * R - G;
+                    break;
+                  case 'cive':
+                    indexValue = 0.441 * R - 0.811 * G + 0.385 * B + 18.78745;
+                    break;
+                  case 'tgi':
+                    indexValue = -0.5 * (190 * (R - G) - 120 * (R - B));
+                    break;
+                  case 'gli':
+                    indexValue = (2 * G + R + B) !== 0 ? (2 * G - R - B) / (2 * G + R + B) : 0;
+                    break;
+                  case 'ngrdi':
+                    indexValue = (G + R) !== 0 ? (G - R) / (G + R) : 0;
+                    break;
+                  
+                  // Soil indices
+                  case 'sci':
+                    indexValue = (R + G + B) !== 0 ? (R - G) / (R + G + B) : 0;
+                    break;
+                  
+                  // Urban/Surface indices
+                  case 'rednessIndex':
+                    indexValue = (B * G) !== 0 ? (R * R) / (B * G) : 0;
+                    break;
+                  case 'bluenessIndex':
+                    indexValue = (R * G) !== 0 ? (B * B) / (R * G) : 0;
+                    break;
+                  case 'greennessIndex':
+                    indexValue = (R * B) !== 0 ? (G * G) / (R * B) : 0;
+                    break;
+                  case 'colorRatioR':
+                    indexValue = (G + B) !== 0 ? R / (G + B) : 0;
+                    break;
+                  case 'colorRatioG':
+                    indexValue = (R + B) !== 0 ? G / (R + B) : 0;
+                    break;
+                  
+                  // Color/Light indices
+                  case 'bi':
+                    indexValue = Math.sqrt(R*R + G*G + B*B);
+                    break;
+                  case 'nbi':
+                    indexValue = (R + G + B) / 3;
+                    break;
+                  case 'hue':
+                    indexValue = Math.atan2(Math.sqrt(3)*(G - B), 2*R - G - B);
+                    break;
+                  case 'sat':
+                    indexValue = Math.max(R, G, B) - Math.min(R, G, B);
+                    break;
+                  case 'intensity':
+                    indexValue = (R + G + B) / 3;
+                    break;
+                  default:
+                    indexValue = 0;
+                }
+                
+                // Get color for this index value
+                const color = getColor(indexValue, indexType);
+                const rgb = color.match(/\d+/g);
+                
+                heatmapData[i] = parseInt(rgb[0]);
+                heatmapData[i + 1] = parseInt(rgb[1]);
+                heatmapData[i + 2] = parseInt(rgb[2]);
+                heatmapData[i + 3] = 255; // Alpha
               }
-              
-              // Get color for this index value
-              const color = getColor(indexValue, indexType);
-              const rgb = color.match(/\d+/g);
-              
-              heatmapData[i] = parseInt(rgb[0]);
-              heatmapData[i + 1] = parseInt(rgb[1]);
-              heatmapData[i + 2] = parseInt(rgb[2]);
-              heatmapData[i + 3] = 255; // Alpha
             }
             
             heatmapCtx.putImageData(heatmapImageData, 0, 0);
             heatmapResults[indexType] = heatmapCanvas.toDataURL('image/png');
+            
+            setProcessedIndices(prev => [...prev, indexType]);
           }
           
           return heatmapResults;
         };
         
-        const originalHeatmaps = processImage(satelliteImg, 'original');
-        const correctedHeatmaps = processImage(correctedImg, 'corrected');
+        setProcessingStatus('Processing original image...');
+        const originalHeatmaps = await processImage(satelliteImg, 'original');
+        
+        setProcessingStatus('Processing corrected image...');
+        const correctedHeatmaps = await processImage(correctedImg, 'corrected');
         
         setHeatmaps({
           original: originalHeatmaps,
@@ -312,13 +346,19 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
         });
       } catch (error) {
         console.error("Error generating heatmaps:", error);
+        setProcessingStatus(`Error: ${error.message}`);
       } finally {
         setLoading(false);
+        setProcessingStatus('');
       }
     };
     
     generateHeatmaps();
   }, [satelliteImageSrc, satelliteCorrectedImage]);
+
+  const handleGenerateHeatmaps = () => {
+    setShowHeatmaps(true);
+  };
 
   return (
     <div className="backdrop-blur-lg bg-white/50 text-gray-800 p-6 md:p-8 overflow-y-auto rounded-3xl shadow-2xl w-full max-w-5xl mx-auto my-6 border border-gray-100">
@@ -524,7 +564,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <td className="py-2 px-4 border-b border-r border-gray-200">Blueness Index</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200 font-mono text-xs">B²/(R*G)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200">{originalIndices.bluenessIndex}</td>
-                <td className="py-2 px-4 border-b border-r border-gray-200">{correctedIndices.bluenessIndex}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{correctedIndices.bluenessIndex}</td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {calculatePercentageError(originalIndices.bluenessIndex, correctedIndices.bluenessIndex)}
                 </td>
@@ -542,7 +582,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <td className="py-2 px-4 border-b border-r border-gray-200">Color Ratio (R)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200 font-mono text-xs">R/(G+B)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200">{originalIndices.colorRatioR}</td>
-                <td className="py-2 px-4 border-b border-r border-gray-200">{correctedIndices.colorRatioR}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{correctedIndices.colorRatioR}</td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {calculatePercentageError(originalIndices.colorRatioR, correctedIndices.colorRatioR)}
                 </td>
@@ -551,7 +591,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <td className="py-2 px-4 border-b border-r border-gray-200">Color Ratio (G)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200 font-mono text-xs">G/(R+B)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200">{originalIndices.colorRatioG}</td>
-                <td className="py-2 px-4 border-b border-r border-gray-200">{correctedIndices.colorRatioG}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{correctedIndices.colorRatioG}</td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {calculatePercentageError(originalIndices.colorRatioG, correctedIndices.colorRatioG)}
                 </td>
@@ -577,7 +617,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <th className="py-2 px-4 border-b border-r border-gray-200 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Index</th>
                 <th className="py-2 px-4 border-b border-r border-gray-200 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Formula</th>
                 <th className="py-2 px-4 border-b border-r border-gray-200 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Original</th>
-                <th className="py-2 px-4 border-b border-r border-gray-200 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Corrected</th>
+                <th className="py-2 px-4 border-b border-gray-200 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Corrected</th>
                 <th className="py-2 px-4 border-b border-gray-200 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">% Change</th>
               </tr>
             </thead>
@@ -595,7 +635,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <td className="py-2 px-4 border-b border-r border-gray-200">NBI (Normalized Brightness)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200 font-mono text-xs">(R+G+B)/3</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200">{originalIndices.nbi}</td>
-                <td className="py-2 px-4 border-b border-r border-gray-200">{correctedIndices.nbi}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{correctedIndices.nbi}</td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {calculatePercentageError(originalIndices.nbi, correctedIndices.nbi)}
                 </td>
@@ -604,7 +644,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <td className="py-2 px-4 border-b border-r border-gray-200">HUE (Color Hue)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200 font-mono text-xs">atan2(sqrt(3)*(G-B), 2*R-G-B)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200">{originalIndices.hue}</td>
-                <td className="py-2 px-4 border-b border-r border-gray-200">{correctedIndices.hue}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{correctedIndices.hue}</td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {calculatePercentageError(originalIndices.hue, correctedIndices.hue)}
                 </td>
@@ -613,7 +653,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <td className="py-2 px-4 border-b border-r border-gray-200">SAT (Saturation)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200 font-mono text-xs">max(R,G,B)-min(R,G,B)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200">{originalIndices.sat}</td>
-                <td className="py-2 px-4 border-b border-r border-gray-200">{correctedIndices.sat}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{correctedIndices.sat}</td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {calculatePercentageError(originalIndices.sat, correctedIndices.sat)}
                 </td>
@@ -622,7 +662,7 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
                 <td className="py-2 px-4 border-b border-r border-gray-200">I (Intensity)</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200 font-mono text-xs">(R+G+B)/3</td>
                 <td className="py-2 px-4 border-b border-r border-gray-200">{originalIndices.intensity}</td>
-                <td className="py-2 px-4 border-b border-r border-gray-200">{correctedIndices.intensity}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{correctedIndices.intensity}</td>
                 <td className="py-2 px-4 border-b border-gray-200">
                   {calculatePercentageError(originalIndices.intensity, correctedIndices.intensity)}
                 </td>
@@ -639,10 +679,35 @@ export default function Analysis({ satelliteData, droneData, onBack, satelliteIm
           <h2 className="text-xl font-bold text-gray-800">Heatmap Visualizations</h2>
         </div>
         
-        {loading ? (
-          <div className="flex items-center justify-center py-10">
-            <FaSpinner className="animate-spin text-blue-500 mr-3 text-xl" />
-            <p>Generating heatmaps...</p>
+        {!showHeatmaps ? (
+          <div className="text-center py-8">
+            <p className="text-gray-700 mb-4">
+              Heatmap generation involves intensive calculations that may temporarily slow down your browser.
+            </p>
+            <button 
+              onClick={handleGenerateHeatmaps}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm font-medium"
+            >
+              Generate Heatmaps
+            </button>
+          </div>
+        ) : loading ? (
+          <div className="flex flex-col items-center justify-center py-10">
+            <div className="w-full max-w-md bg-gray-100 rounded-full h-4 mb-4">
+              <div 
+                className="bg-blue-500 h-4 rounded-full transition-all duration-300"
+                style={{ width: `${(processedIndices.length / totalIndices) * 100}%` }}
+              ></div>
+            </div>
+            <div className="flex items-center">
+              <FaSpinner className="animate-spin text-blue-500 mr-3 text-xl" />
+              <p>{processingStatus || 'Processing images...'}</p>
+            </div>
+            <p className="text-sm text-gray-500 mt-4">
+              {processedIndices.length > 0 ? 
+                `Processed ${processedIndices.length}/${totalIndices} indices` : 
+                'Please wait while we analyze the images. This may take a moment...'}
+            </p>
           </div>
         ) : (
           <>

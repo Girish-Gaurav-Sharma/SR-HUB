@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FaArrowLeft, FaExchangeAlt, FaLeaf, FaSpinner } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 export default function Analysis({ satelliteData, droneData, onBack, satelliteImageSrc, satelliteCorrectedImage }) {
   const [heatmaps, setHeatmaps] = useState({

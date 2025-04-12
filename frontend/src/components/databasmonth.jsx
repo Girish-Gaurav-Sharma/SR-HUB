@@ -16,6 +16,7 @@ const SatelliteImageGallery = ({ data }) => {
 	const [loading, setLoading] = useState(true);
 	const [selectedSatellites, setSelectedSatellites] = useState([]);
 	const [popupMessage, setPopupMessage] = useState(null);
+	const [fullScreenImage, setFullScreenImage] = useState(null); // new state
 	const dataLoadedRef = useRef(false);
 	const mountDataComponent = () => {
 		// You can set a state that conditionally renders <Data />
@@ -92,6 +93,16 @@ const SatelliteImageGallery = ({ data }) => {
 
 	const closePopup = () => {
 		setPopupMessage(null);
+	};
+
+	// Function to open full screen image
+	const openFullScreen = imageUrl => {
+		setFullScreenImage(imageUrl);
+	};
+
+	// Function to close full screen image
+	const closeFullScreen = () => {
+		setFullScreenImage(null);
 	};
 
 	const satelliteColors = {
@@ -236,8 +247,7 @@ const SatelliteImageGallery = ({ data }) => {
 								<motion.div
 									key={index}
 									className="image-item bg-white p-4 rounded-lg shadow-lg cursor-pointer"
-									whileHover={{ scale: 1.05 }}
-									onClick={showPopup}>
+									whileHover={{ scale: 1.05 }}>
 									<div
 										className={`flex items-center justify-center ${
 											satelliteColors[
@@ -253,6 +263,9 @@ const SatelliteImageGallery = ({ data }) => {
 											src={item.real_image_url}
 											alt={`Scene ${item.systemId}`}
 											className="w-full h-auto mb-2 rounded"
+											onClick={() =>
+												openFullScreen(item.real_image_url)
+											} // Open full screen on click
 										/>
 									) : (
 										<div className="w-full h-48 flex items-center justify-center bg-gray-200 mb-2 rounded">
@@ -359,7 +372,7 @@ const SatelliteImageGallery = ({ data }) => {
 							className="fixed top-1 right-4 text-white bg-red-600 w-20 rounded-full p-3 hover:bg-red-700 text-lg font-semibold z-50"
 							onClick={() => setIsDataMounted(false)} // Ensure `setIsDataMounted` is a function to toggle mounting
 						>
-							✕
+								✕
 						</button>
 						<div
 							className="
@@ -370,6 +383,24 @@ const SatelliteImageGallery = ({ data }) => {
 							style={{ flexGrow: 1 }}>
 							<Dataa />
 						</div>
+					</div>,
+					document.body
+				)}
+
+			{/* Full Screen Image Overlay */}
+			{fullScreenImage &&
+				ReactDOM.createPortal(
+					<div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
+						<button
+							onClick={closeFullScreen}
+							className="absolute top-4 right-4 text-gray-300 hover:text-white text-2xl focus:outline-none">
+							&times;
+						</button>
+						<img
+							src={fullScreenImage}
+							alt="Full Screen Satellite"
+							className="max-w-screen-lg max-h-screen"
+						/>
 					</div>,
 					document.body
 				)}

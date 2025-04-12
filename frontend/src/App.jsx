@@ -305,7 +305,7 @@ const App = () => {
 											}>
 											Satellite Calendar
 										</button>
-										<button
+										{/* <button
 											className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold
                       py-2 px-6 rounded-full transition-all duration-200 shadow-md ${
 							activeTab === 'Dataa'
@@ -316,7 +316,7 @@ const App = () => {
 												setActiveTab('Dataa')
 											}>
 											SR Profile
-										</button>
+										</button> */}
 										<button
 											className={`bg-blue-600 hover:bg-blue-800 text-white font-semibold
 											py-2 px-6 rounded-full transition-all duration-200 shadow-md ${

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import { 
   FaCloudUploadAlt, FaTrash, FaExclamationTriangle, 
-  FaUndo, FaDownload, FaWrench, FaSatellite, FaPlane, FaChartBar
+  FaUndo, FaDownload, FaWrench, FaSatellite, FaPlane, FaChartBar, FaImage, FaTimes, FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 import Analysis from './Analysis';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,6 +69,274 @@ const errorVariants = {
 const MAX_FILE_SIZE_MB = 100;
 const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/tiff'];
 
+// Dummy image gallery
+import satelliteImage1 from '../../public/sattelite.png';
+
+import droneImage1 from '../../public/1.jpg';
+import droneImage2 from '../../public/2.jpg';
+import droneImage3 from '../../public/3.jpg';
+import droneImage4 from '../../public/4.jpg';
+import droneImage5 from '../../public/5.jpg';
+import droneImage6 from '../../public/6.jpg';
+import droneImage7 from '../../public/7.jpg';
+
+const dummySatelliteImages = [
+  satelliteImage1
+];
+
+const dummyDroneImages = [
+  droneImage1,
+  droneImage2,
+  droneImage3,
+  droneImage4,
+  droneImage5,
+  droneImage6,
+  droneImage7
+];
+
+// New components for gallery popups
+const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
+  const [selectedIndex, setSelectedIndex] = useState(null);
+
+  const handleImageClick = (idx) => {
+    setSelectedIndex(idx);
+  };
+
+  const handleCloseFullscreen = () => {
+    setSelectedIndex(null);
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleSelectImage = (src) => {
+    onImageSelect(src);
+    onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed top-0 left-0 w-full h-full bg-white/95 z-50 flex flex-col"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-800">Satellite Image Gallery</h2>
+            <motion.button
+              onClick={onClose}
+              className="p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaTimes className="text-gray-700" />
+            </motion.button>
+          </div>
+          <div className="p-6 grid grid-cols-3 md:grid-cols-5 gap-4 overflow-y-auto flex-grow">
+            {images.map((imageSrc, index) => (
+              <motion.div key={index}>
+                <motion.img
+                  src={imageSrc}
+                  alt={`Gallery Image ${index + 1}`}
+                  className="w-full h-32 object-cover rounded-md shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200"
+                  onClick={() => handleImageClick(index)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <button
+                  className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 rounded-full"
+                  onClick={() => handleSelectImage(imageSrc)}
+                >
+                  Select
+                </button>
+              </motion.div>
+            ))}
+          </div>
+          {/* Fullscreen Image Overlay with navigation */}
+          <AnimatePresence>
+            {selectedIndex !== null && (
+              <motion.div
+                className="fixed top-0 left-0 w-full h-full bg-black/80 z-50 flex items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={handleCloseFullscreen}
+              >
+                <motion.img
+                  src={images[selectedIndex]}
+                  alt="Fullscreen Image"
+                  className="max-w-screen-lg max-h-screen object-contain cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0.8 }}
+                  transition={{ duration: 0.3 }}
+                />
+                <motion.button
+                  onClick={handleCloseFullscreen}
+                  className="absolute top-6 right-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaTimes className="text-gray-700" />
+                </motion.button>
+                <motion.button
+                  onClick={handlePrev}
+                  className="absolute left-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaChevronLeft className="text-gray-700" />
+                </motion.button>
+                <motion.button
+                  onClick={handleNext}
+                  className="absolute right-14 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaChevronRight className="text-gray-700" />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const DroneGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
+  const [selectedIndex, setSelectedIndex] = useState(null);
+
+  const handleImageClick = (idx) => {
+    setSelectedIndex(idx);
+  };
+
+  const handleCloseFullscreen = () => {
+    setSelectedIndex(null);
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleSelectImage = (src) => {
+    onImageSelect(src);
+    onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed top-0 left-0 w-full h-full bg-white/95 z-50 flex flex-col"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-800">Drone Image Gallery</h2>
+            <motion.button
+              onClick={onClose}
+              className="p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaTimes className="text-gray-700" />
+            </motion.button>
+          </div>
+          <div className="p-6 grid grid-cols-3 md:grid-cols-5 gap-4 overflow-y-auto flex-grow">
+            {images.map((imageSrc, index) => (
+              <motion.div key={index}>
+                <motion.img
+                  src={imageSrc}
+                  alt={`Gallery Image ${index + 1}`}
+                  className="w-full h-32 object-cover rounded-md shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200"
+                  onClick={() => handleImageClick(index)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <button
+                  className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white text-sm py-1 rounded-full"
+                  onClick={() => handleSelectImage(imageSrc)}
+                >
+                  Select
+                </button>
+              </motion.div>
+            ))}
+          </div>
+          {/* Fullscreen Image Overlay with navigation */}
+          <AnimatePresence>
+            {selectedIndex !== null && (
+              <motion.div
+                className="fixed top-0 left-0 w-full h-full bg-black/80 z-50 flex items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={handleCloseFullscreen}
+              >
+                <motion.img
+                  src={images[selectedIndex]}
+                  alt="Fullscreen Image"
+                  className="max-w-screen-lg max-h-screen object-contain cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0.8 }}
+                  transition={{ duration: 0.3 }}
+                />
+                <motion.button
+                  onClick={handleCloseFullscreen}
+                  className="absolute top-6 right-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaTimes className="text-gray-700" />
+                </motion.button>
+                <motion.button
+                  onClick={handlePrev}
+                  className="absolute left-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaChevronLeft className="text-gray-700" />
+                </motion.button>
+                <motion.button
+                  onClick={handleNext}
+                  className="absolute right-14 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaChevronRight className="text-gray-700" />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function Correction() {
   // Satellite image states
   const [satelliteImageSrc, setSatelliteImageSrc] = useState(null);
@@ -81,6 +349,7 @@ export default function Correction() {
   const [satelliteAverageImage, setSatelliteAverageImage] = useState(null);
   const [satelliteAvgRgb, setSatelliteAvgRgb] = useState({ r: 0, g: 0, b: 0 });
   const [satelliteCorrectedImage, setSatelliteCorrectedImage] = useState(null);
+  const [isSatelliteGalleryOpen, setIsSatelliteGalleryOpen] = useState(false);
 
   // Drone image states
   const [droneImageSrc, setDroneImageSrc] = useState(null);
@@ -92,6 +361,7 @@ export default function Correction() {
   const [droneOriginalCroppedImage, setDroneOriginalCroppedImage] = useState(null);
   const [droneAverageImage, setDroneAverageImage] = useState(null);
   const [droneAvgRgb, setDroneAvgRgb] = useState({ r: 0, g: 0, b: 0 });
+  const [isDroneGalleryOpen, setIsDroneGalleryOpen] = useState(false);
 
   // Shared states
   const [error, setError] = useState(null);
@@ -201,6 +471,32 @@ export default function Correction() {
 
   const handleDroneFileChange = (e) => {
     if (e.target.files?.[0]) handleDroneImageUpload(e.target.files[0]);
+  };
+
+  const handleSatelliteGallerySelect = (imageSrc) => {
+    setSatelliteImageSrc(imageSrc);
+    const img = new Image();
+    img.onload = () => {
+      setSatelliteImageDimensions({
+        width: img.width,
+        height: img.height
+      });
+    };
+    img.src = imageSrc;
+    setIsSatelliteGalleryOpen(false); // Close the gallery after selection
+  };
+
+  const handleDroneGallerySelect = (imageSrc) => {
+    setDroneImageSrc(imageSrc);
+    const img = new Image();
+    img.onload = () => {
+      setDroneImageDimensions({
+        width: img.width,
+        height: img.height
+      });
+    };
+    img.src = imageSrc;
+    setIsDroneGalleryOpen(false); // Close the gallery after selection
   };
 
   const createImage = (url) =>
@@ -369,9 +665,9 @@ export default function Correction() {
     // Negative values indicate satellite is lower than drone
     // Positive values indicate satellite is higher than drone
     return {
-      r: droneAvgRgb.r === 0 ? 0 : (((satelliteAvgRgb.r - droneAvgRgb.r) / droneAvgRgb.r) * 100).toFixed(1),
-      g: droneAvgRgb.g === 0 ? 0 : (((satelliteAvgRgb.g - droneAvgRgb.g) / droneAvgRgb.g) * 100).toFixed(1),
-      b: droneAvgRgb.b === 0 ? 0 : (((satelliteAvgRgb.b - droneAvgRgb.b) / droneAvgRgb.b) * 100).toFixed(1)
+      r: droneAvgRgb.r === 0 ? 0 : (((droneAvgRgb.r - satelliteAvgRgb.r) / droneAvgRgb.r) * 100).toFixed(1),
+      g: droneAvgRgb.g === 0 ? 0 : (((droneAvgRgb.g - satelliteAvgRgb.g) / droneAvgRgb.g) * 100).toFixed(1),
+      b: droneAvgRgb.b === 0 ? 0 : (((droneAvgRgb.b - satelliteAvgRgb.b) / droneAvgRgb.b) * 100).toFixed(1)
     };
   };
 
@@ -513,48 +809,78 @@ export default function Correction() {
           <AnimatePresence mode="wait">
             {!satelliteImageSrc && !isLoading && (
               <motion.div 
-                className="p-8 md:p-10 border-dashed border-2 border-blue-300 rounded-xl mb-6 text-center bg-gradient-to-b from-white/80 to-blue-50/60 shadow-md hover:shadow-lg hover:border-blue-400 transition-all duration-300 group"
+                className="mb-6"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
               >
-                <motion.div
+                <motion.div 
+                  className="p-8 md:p-10 border-dashed border-2 border-blue-300 rounded-xl text-center bg-gradient-to-b from-white/80 to-blue-50/60 shadow-md hover:shadow-lg hover:border-blue-400 transition-all duration-300 group flex-1"
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                  <FaCloudUploadAlt className="mx-auto text-4xl md:text-5xl text-blue-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
+                    <FaImage className="mx-auto text-4xl md:text-5xl text-blue-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  </motion.div>
+                  <motion.p 
+                    className="mb-5 text-gray-700 font-medium"
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                  >
+                    Select an Image
+                  </motion.p>
+                  
+                  {/* Upload Button */}
+                  <motion.label
+                    htmlFor="satelliteFileInput"
+                    className="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0 mb-3"
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Upload from Device
+                    <input
+                      type="file"
+                      onChange={handleSatelliteFileChange}
+                      accept={ACCEPTED_FILE_TYPES.join(',')}
+                      className="hidden"
+                      id="satelliteFileInput"
+                    />
+                  </motion.label>
+
+                  {/* Gallery Button */}
+                  <motion.button
+                    onClick={() => setIsSatelliteGalleryOpen(true)}
+                    className="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Select from Gallery
+                  </motion.button>
                 </motion.div>
-                <motion.p 
-                  className="mb-5 text-gray-700 font-medium"
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                  Upload your satellite image
-                </motion.p>
-                <input
-                  type="file"
-                  onChange={handleSatelliteFileChange}
-                  accept={ACCEPTED_FILE_TYPES.join(',')}
-                  className="hidden"
-                  id="satelliteFileInput"
-                />
-                <motion.label
-                  htmlFor="satelliteFileInput"
-                  className="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                  whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Select Image
-                </motion.label>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Satellite Gallery Popup */}
+          <SatelliteGalleryPopup
+            isOpen={isSatelliteGalleryOpen}
+            onClose={() => setIsSatelliteGalleryOpen(false)}
+            onImageSelect={handleSatelliteGallerySelect}
+            images={dummySatelliteImages}
+          />
 
           <AnimatePresence>
             {satelliteImageSrc && !isLoading && (
@@ -687,7 +1013,7 @@ export default function Correction() {
                 <motion.img
                   src={satelliteAverageImage}
                   alt="Satellite Averaged"
-                  className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+                  className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration=300"
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.4 }}
@@ -724,48 +1050,78 @@ export default function Correction() {
           <AnimatePresence mode="wait">
             {!droneImageSrc && !isLoading && (
               <motion.div 
-                className="p-8 md:p-10 border-dashed border-2 border-green-300 rounded-xl mb-6 text-center bg-gradient-to-b from-white/80 to-green-50/60 shadow-md hover:shadow-lg hover:border-green-400 transition-all duration-300 group"
+                className="mb-6"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
               >
-                <motion.div
+                <motion.div 
+                  className="p-8 md:p-10 border-dashed border-2 border-green-300 rounded-xl text-center bg-gradient-to-b from-white/80 to-green-50/60 shadow-md hover:shadow-lg hover:border-green-400 transition-all duration-300 group flex-1"
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                  <FaCloudUploadAlt className="mx-auto text-4xl md:text-5xl text-green-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
+                    <FaImage className="mx-auto text-4xl md:text-5xl text-green-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  </motion.div>
+                  <motion.p 
+                    className="mb-5 text-gray-700 font-medium"
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                  >
+                    Select an Image
+                  </motion.p>
+                  
+                  {/* Upload Button */}
+                  <motion.label
+                    htmlFor="droneFileInput"
+                    className="cursor-pointer inline-block bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0 mb-3"
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Upload from Device
+                    <input
+                      type="file"
+                      onChange={handleDroneFileChange}
+                      accept={ACCEPTED_FILE_TYPES.join(',')}
+                      className="hidden"
+                      id="droneFileInput"
+                    />
+                  </motion.label>
+
+                  {/* Gallery Button */}
+                  <motion.button
+                    onClick={() => setIsDroneGalleryOpen(true)}
+                    className="cursor-pointer inline-block bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Select from Gallery
+                  </motion.button>
                 </motion.div>
-                <motion.p 
-                  className="mb-5 text-gray-700 font-medium"
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                  Upload your drone image
-                </motion.p>
-                <input
-                  type="file"
-                  onChange={handleDroneFileChange}
-                  accept={ACCEPTED_FILE_TYPES.join(',')}
-                  className="hidden"
-                  id="droneFileInput"
-                />
-                <motion.label
-                  htmlFor="droneFileInput"
-                  className="cursor-pointer inline-block bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                  whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Select Image
-                </motion.label>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Drone Gallery Popup */}
+          <DroneGalleryPopup
+            isOpen={isDroneGalleryOpen}
+            onClose={() => setIsDroneGalleryOpen(false)}
+            onImageSelect={handleDroneGallerySelect}
+            images={dummyDroneImages}
+          />
 
           <AnimatePresence>
             {droneImageSrc && !isLoading && (

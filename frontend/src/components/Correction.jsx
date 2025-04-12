@@ -1,36 +1,33 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaCloudUploadAlt, FaTrash, FaExclamationTriangle, 
-  FaUndo, FaDownload, FaWrench, FaSatellite, FaPlane, FaChartBar, FaImage, FaTimes, FaChevronLeft, FaChevronRight
+  FaUndo, FaDownload, FaWrench, FaSatellite, FaPlane, 
+  FaChartBar, FaImage, FaTimes, FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 import Analysis from './Analysis';
-import { motion, AnimatePresence } from 'framer-motion';
 
-// Add this component inside your file (before the main component)
-const AnimatedLoader = () => (
-  <motion.div 
-    className="flex justify-center items-center my-8 py-4"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-  >
-    <div className="relative w-16 h-16">
-      <motion.div 
-        className="absolute top-0 left-0 right-0 bottom-0 rounded-full border-t-4 border-blue-600 border-opacity-80"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.div 
-        className="absolute top-1 left-1 right-1 bottom-1 rounded-full border-t-4 border-green-500 border-opacity-80"
-        animate={{ rotate: -360 }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
-      />
-    </div>
-  </motion.div>
-);
+// Sample images
+import satelliteImage1 from '../../public/sattelite.png';
+import droneImage1 from '../../public/1.jpg';
+import droneImage2 from '../../public/2.jpg';
+import droneImage3 from '../../public/3.jpg';
+import droneImage4 from '../../public/4.jpg';
+import droneImage5 from '../../public/5.jpg';
+import droneImage6 from '../../public/6.jpg';
+import droneImage7 from '../../public/7.jpg';
 
-// Add these animation variants before your main component
+// Constants
+const MAX_FILE_SIZE_MB = 100;
+const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/tiff'];
+const dummySatelliteImages = [satelliteImage1];
+const dummyDroneImages = [
+  droneImage1, droneImage2, droneImage3, droneImage4, 
+  droneImage5, droneImage6, droneImage7
+];
+
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { 
@@ -65,46 +62,35 @@ const errorVariants = {
   }
 };
 
-// Constants
-const MAX_FILE_SIZE_MB = 100;
-const ACCEPTED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/tiff'];
+// Helper components
+const AnimatedLoader = () => (
+  <motion.div 
+    className="flex justify-center items-center my-8 py-4"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+  >
+    <div className="relative w-16 h-16">
+      <motion.div 
+        className="absolute top-0 left-0 right-0 bottom-0 rounded-full border-t-4 border-blue-600 border-opacity-80"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div 
+        className="absolute top-1 left-1 right-1 bottom-1 rounded-full border-t-4 border-green-500 border-opacity-80"
+        animate={{ rotate: -360 }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
+      />
+    </div>
+  </motion.div>
+);
 
-// Dummy image gallery
-import satelliteImage1 from '../../public/sattelite.png';
-
-import droneImage1 from '../../public/1.jpg';
-import droneImage2 from '../../public/2.jpg';
-import droneImage3 from '../../public/3.jpg';
-import droneImage4 from '../../public/4.jpg';
-import droneImage5 from '../../public/5.jpg';
-import droneImage6 from '../../public/6.jpg';
-import droneImage7 from '../../public/7.jpg';
-
-const dummySatelliteImages = [
-  satelliteImage1
-];
-
-const dummyDroneImages = [
-  droneImage1,
-  droneImage2,
-  droneImage3,
-  droneImage4,
-  droneImage5,
-  droneImage6,
-  droneImage7
-];
-
-// New components for gallery popups
-const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
+// Reusable Gallery Popup Component
+const ImageGalleryPopup = ({ isOpen, onClose, onImageSelect, images, title, buttonColor }) => {
   const [selectedIndex, setSelectedIndex] = useState(null);
 
-  const handleImageClick = (idx) => {
-    setSelectedIndex(idx);
-  };
-
-  const handleCloseFullscreen = () => {
-    setSelectedIndex(null);
-  };
+  const handleImageClick = (idx) => setSelectedIndex(idx);
+  const handleCloseFullscreen = () => setSelectedIndex(null);
 
   const handlePrev = (e) => {
     e.stopPropagation();
@@ -131,18 +117,18 @@ const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Satellite Image Gallery</h2>
+          <div className="p-5 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-800">{title}</h2>
             <motion.button
               onClick={onClose}
-              className="p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+              className="p-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
               <FaTimes className="text-gray-700" />
             </motion.button>
           </div>
-          <div className="p-6 grid grid-cols-3 md:grid-cols-5 gap-4 overflow-y-auto flex-grow">
+          <div className="p-5 grid grid-cols-3 md:grid-cols-5 gap-4 overflow-y-auto flex-grow">
             {images.map((imageSrc, index) => (
               <motion.div key={index}>
                 <motion.img
@@ -154,7 +140,7 @@ const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
                   whileTap={{ scale: 0.95 }}
                 />
                 <button
-                  className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-1 rounded-full"
+                  className={`mt-2 w-full bg-${buttonColor}-600 hover:bg-${buttonColor}-700 text-white text-sm py-1 rounded-md`}
                   onClick={() => handleSelectImage(imageSrc)}
                 >
                   Select
@@ -162,7 +148,7 @@ const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
               </motion.div>
             ))}
           </div>
-          {/* Fullscreen Image Overlay with navigation */}
+          
           <AnimatePresence>
             {selectedIndex !== null && (
               <motion.div
@@ -185,7 +171,7 @@ const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
                 />
                 <motion.button
                   onClick={handleCloseFullscreen}
-                  className="absolute top-6 right-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  className="absolute top-6 right-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -193,7 +179,7 @@ const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
                 </motion.button>
                 <motion.button
                   onClick={handlePrev}
-                  className="absolute left-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  className="absolute left-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -201,7 +187,7 @@ const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
                 </motion.button>
                 <motion.button
                   onClick={handleNext}
-                  className="absolute right-14 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
+                  className="absolute right-14 p-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -216,138 +202,318 @@ const SatelliteGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
   );
 };
 
-const DroneGalleryPopup = ({ isOpen, onClose, onImageSelect, images }) => {
-  const [selectedIndex, setSelectedIndex] = useState(null);
-
-  const handleImageClick = (idx) => {
-    setSelectedIndex(idx);
+// Reusable Image Editor Component
+const ImageEditor = ({ 
+  type,
+  imageSrc, 
+  setImageSrc,
+  crop, 
+  setCrop, 
+  zoom, 
+  setZoom, 
+  handleCropComplete,
+  resetEditor,
+  resetAll,
+  showCroppedImage,
+  imageDimensions,
+  isGalleryOpen,
+  setIsGalleryOpen,
+  galleryImages,
+  color
+}) => {
+  const handleFileChange = (e) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      
+      if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+        return false;
+      }
+      
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        return false;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = () => setImageSrc(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleCloseFullscreen = () => {
-    setSelectedIndex(null);
-  };
-
-  const handlePrev = (e) => {
-    e.stopPropagation();
-    setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const handleNext = (e) => {
-    e.stopPropagation();
-    setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
-
-  const handleSelectImage = (src) => {
-    onImageSelect(src);
-    onClose();
+  const handleGallerySelect = (imageSrc) => {
+    setImageSrc(imageSrc);
+    setIsGalleryOpen(false);
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <div className="border border-gray-200 p-5 rounded-md shadow-sm bg-white">
+      <div className="flex items-center mb-4 pb-2 border-b border-gray-200">
         <motion.div
-          className="fixed top-0 left-0 w-full h-full bg-white/95 z-50 flex flex-col"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          initial={{ rotate: type === 'satellite' ? -90 : 90 }}
+          animate={{ rotate: 0 }}
+          transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
         >
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Drone Image Gallery</h2>
-            <motion.button
-              onClick={onClose}
-              className="p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+          {type === 'satellite' ? 
+            <FaSatellite className="text-blue-600 mr-3 text-xl" /> : 
+            <FaPlane className="text-green-600 mr-3 text-xl" />
+          }
+        </motion.div>
+        <h2 className="text-xl font-bold text-gray-800">
+          {type === 'satellite' ? 'Satellite Image' : 'Drone Image'}
+        </h2>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {!imageSrc && (
+          <motion.div 
+            className="mb-5"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.4 }}
+          >
+            <motion.div 
+              className={`p-8 md:p-10 border-dashed border-2 border-${color}-300 rounded-md text-center bg-gradient-to-b from-white/80 to-${color}-50/60 shadow-md hover:shadow-lg hover:border-${color}-400 transition-all duration-300 group flex-1`}
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <FaTimes className="text-gray-700" />
-            </motion.button>
-          </div>
-          <div className="p-6 grid grid-cols-3 md:grid-cols-5 gap-4 overflow-y-auto flex-grow">
-            {images.map((imageSrc, index) => (
-              <motion.div key={index}>
-                <motion.img
-                  src={imageSrc}
-                  alt={`Gallery Image ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-md shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200"
-                  onClick={() => handleImageClick(index)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                />
-                <button
-                  className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white text-sm py-1 rounded-full"
-                  onClick={() => handleSelectImage(imageSrc)}
-                >
-                  Select
-                </button>
-              </motion.div>
-            ))}
-          </div>
-          {/* Fullscreen Image Overlay with navigation */}
-          <AnimatePresence>
-            {selectedIndex !== null && (
               <motion.div
-                className="fixed top-0 left-0 w-full h-full bg-black/80 z-50 flex items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                onClick={handleCloseFullscreen}
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
               >
-                <motion.img
-                  src={images[selectedIndex]}
-                  alt="Fullscreen Image"
-                  className="max-w-screen-lg max-h-screen object-contain cursor-pointer"
-                  onClick={(e) => e.stopPropagation()}
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0.8 }}
-                  transition={{ duration: 0.3 }}
+                <FaImage className={`mx-auto text-4xl md:text-5xl text-${color}-500 mb-4 group-hover:scale-110 transition-transform duration-300`} />
+              </motion.div>
+              <motion.p 
+                className="mb-5 text-gray-700 font-medium"
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                Select an Image
+              </motion.p>
+              
+              <motion.label
+                htmlFor={`${type}FileInput`}
+                className={`cursor-pointer inline-block bg-${color}-600 hover:bg-${color}-700 text-white font-medium px-5 py-2 rounded-md transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0 mb-3`}
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Upload from Device
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept={ACCEPTED_FILE_TYPES.join(',')}
+                  className="hidden"
+                  id={`${type}FileInput`}
                 />
-                <motion.button
-                  onClick={handleCloseFullscreen}
-                  className="absolute top-6 right-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaTimes className="text-gray-700" />
-                </motion.button>
-                <motion.button
-                  onClick={handlePrev}
-                  className="absolute left-6 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaChevronLeft className="text-gray-700" />
-                </motion.button>
-                <motion.button
-                  onClick={handleNext}
-                  className="absolute right-14 p-2 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaChevronRight className="text-gray-700" />
-                </motion.button>
+              </motion.label>
+
+              <motion.button
+                onClick={() => setIsGalleryOpen(true)}
+                className={`cursor-pointer inline-block bg-${color}-600 hover:bg-${color}-700 text-white font-medium px-5 py-2 rounded-md transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0`}
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Select from Gallery
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <ImageGalleryPopup
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        onImageSelect={handleGallerySelect}
+        images={galleryImages}
+        title={type === 'satellite' ? 'Satellite Image Gallery' : 'Drone Image Gallery'}
+        buttonColor={color}
+      />
+
+      <AnimatePresence>
+        {imageSrc && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <motion.div 
+              className="relative w-full h-[20rem] border rounded-md overflow-hidden mb-4 bg-gray-100 shadow-inner"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                maxZoom={20}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={handleCropComplete}
+              />
+            </motion.div>
+            
+            {imageDimensions?.width > 0 && (
+              <motion.div 
+                className="mb-3 text-sm text-gray-600 bg-gray-50 inline-block px-3 py-1 rounded-md"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                Original: {imageDimensions.width} × {imageDimensions.height}px
               </motion.div>
             )}
-          </AnimatePresence>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            
+            <div className="flex flex-wrap items-center gap-2 mb-4 mt-2">
+              <div className="flex space-x-2 mr-auto">
+                <motion.button
+                  onClick={() => setZoom(Math.min(20, zoom + 0.2))}
+                  className={`bg-${color}-600 hover:bg-${color}-700 text-white px-3 py-1 rounded-md transition-all duration-200 shadow-sm text-sm`}
+                  title="Zoom in"
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  Zoom In
+                </motion.button>
+                <motion.button
+                  onClick={() => setZoom(Math.max(1, zoom - 0.2))}
+                  className={`bg-${color}-600 hover:bg-${color}-700 text-white px-3 py-1 rounded-md transition-all duration-200 shadow-sm text-sm`}
+                  title="Zoom out"
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  Zoom Out
+                </motion.button>
+                <motion.button
+                  onClick={resetEditor}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-md transition-all duration-200 shadow-sm text-sm"
+                  title="Reset changes"
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <FaUndo className="inline mr-1 -mt-0.5" /> Reset
+                </motion.button>
+              </div>
+              <div className="flex space-x-2">
+                <motion.button
+                  onClick={showCroppedImage}
+                  className={`bg-${color}-600 hover:bg-${color}-700 text-white px-4 py-2 rounded-md transition-all duration-200 font-medium flex items-center justify-center`}
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" 
+                  }}
+                >
+                  Crop Image
+                </motion.button>
+                <motion.button
+                  onClick={resetAll}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-all duration-200 font-medium flex items-center justify-center"
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" 
+                  }}
+                >
+                  <FaTrash className="inline mr-1 -mt-0.5" /> Cancel
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
+// Image Processing Utilities
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = (error) => reject(error);
+    img.src = url;
+  });
+
+const getCroppedImg = async (imageSrc, pixelCrop) => {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  
+  // Draw the cropped area
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  // Original cropped image
+  const originalDataUrl = canvas.toDataURL('image/png');
+
+  // Calculate average color
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let totalR = 0, totalG = 0, totalB = 0;
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    totalR += imageData.data[i];
+    totalG += imageData.data[i + 1];
+    totalB += imageData.data[i + 2];
+  }
+  const count = imageData.data.length / 4;
+  const avgR = Math.round(totalR / count);
+  const avgG = Math.round(totalG / count);
+  const avgB = Math.round(totalB / count);
+
+  // Apply average color
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    imageData.data[i] = avgR;
+    imageData.data[i + 1] = avgG;
+    imageData.data[i + 2] = avgB;
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  // Averaged image
+  const averagedDataUrl = canvas.toDataURL('image/png');
+
+  return {
+    originalDataUrl,
+    averagedDataUrl,
+    avgR,
+    avgG,
+    avgB
+  };
+};
+
+// Main component
 export default function Correction() {
   // Satellite image states
   const [satelliteImageSrc, setSatelliteImageSrc] = useState(null);
   const [satelliteCrop, setSatelliteCrop] = useState({ x: 0, y: 0 });
   const [satelliteZoom, setSatelliteZoom] = useState(1);
   const [satelliteCroppedAreaPixels, setSatelliteCroppedAreaPixels] = useState(null);
-  const [satelliteCroppedImage, setSatelliteCroppedImage] = useState(null);
-  const [satelliteImageDimensions, setSatelliteImageDimensions] = useState({ width: 0, height: 0 });
   const [satelliteOriginalCroppedImage, setSatelliteOriginalCroppedImage] = useState(null);
   const [satelliteAverageImage, setSatelliteAverageImage] = useState(null);
   const [satelliteAvgRgb, setSatelliteAvgRgb] = useState({ r: 0, g: 0, b: 0 });
+  const [satelliteImageDimensions, setSatelliteImageDimensions] = useState({ width: 0, height: 0 });
   const [satelliteCorrectedImage, setSatelliteCorrectedImage] = useState(null);
   const [isSatelliteGalleryOpen, setIsSatelliteGalleryOpen] = useState(false);
 
@@ -356,11 +522,10 @@ export default function Correction() {
   const [droneCrop, setDroneCrop] = useState({ x: 0, y: 0 });
   const [droneZoom, setDroneZoom] = useState(1);
   const [droneCroppedAreaPixels, setDroneCroppedAreaPixels] = useState(null);
-  const [droneCroppedImage, setDroneCroppedImage] = useState(null);
-  const [droneImageDimensions, setDroneImageDimensions] = useState({ width: 0, height: 0 });
   const [droneOriginalCroppedImage, setDroneOriginalCroppedImage] = useState(null);
   const [droneAverageImage, setDroneAverageImage] = useState(null);
   const [droneAvgRgb, setDroneAvgRgb] = useState({ r: 0, g: 0, b: 0 });
+  const [droneImageDimensions, setDroneImageDimensions] = useState({ width: 0, height: 0 });
   const [isDroneGalleryOpen, setIsDroneGalleryOpen] = useState(false);
 
   // Shared states
@@ -385,6 +550,7 @@ export default function Correction() {
     setDroneCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
+  // File validation
   const validateFile = (file) => {
     if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
       setError(`Unsupported file type. Please use JPG, PNG, WebP or TIFF.`);
@@ -399,11 +565,11 @@ export default function Correction() {
     return true;
   };
 
-  // Satellite image upload handler
+  // Satellite image handling
   const handleSatelliteImageUpload = (file) => {
     if (!file) return;
     
-    setSatelliteCroppedImage(null);
+    setSatelliteOriginalCroppedImage(null);
     setError(null);
     
     if (!validateFile(file)) return;
@@ -432,11 +598,11 @@ export default function Correction() {
     reader.readAsDataURL(file);
   };
 
-  // Drone image upload handler
+  // Drone image handling
   const handleDroneImageUpload = (file) => {
     if (!file) return;
     
-    setDroneCroppedImage(null);
+    setDroneOriginalCroppedImage(null);
     setError(null);
     
     if (!validateFile(file)) return;
@@ -465,106 +631,37 @@ export default function Correction() {
     reader.readAsDataURL(file);
   };
 
-  const handleSatelliteFileChange = (e) => {
-    if (e.target.files?.[0]) handleSatelliteImageUpload(e.target.files[0]);
+  // Reset functions
+  const resetSatelliteEditor = () => {
+    setSatelliteCrop({ x: 0, y: 0 });
+    setSatelliteZoom(1);
+  };
+  
+  const resetDroneEditor = () => {
+    setDroneCrop({ x: 0, y: 0 });
+    setDroneZoom(1);
+  };
+  
+  const resetSatelliteAll = () => {
+    setError(null);
+    setSatelliteImageSrc(null);
+    setSatelliteOriginalCroppedImage(null);
+    setSatelliteAverageImage(null);
+    setSatelliteAvgRgb({ r: 0, g: 0, b: 0 });
+    setSatelliteCorrectedImage(null);
+    resetSatelliteEditor();
+  };
+  
+  const resetDroneAll = () => {
+    setError(null);
+    setDroneImageSrc(null);
+    setDroneOriginalCroppedImage(null);
+    setDroneAverageImage(null);
+    setDroneAvgRgb({ r: 0, g: 0, b: 0 });
+    resetDroneEditor();
   };
 
-  const handleDroneFileChange = (e) => {
-    if (e.target.files?.[0]) handleDroneImageUpload(e.target.files[0]);
-  };
-
-  const handleSatelliteGallerySelect = (imageSrc) => {
-    setSatelliteImageSrc(imageSrc);
-    const img = new Image();
-    img.onload = () => {
-      setSatelliteImageDimensions({
-        width: img.width,
-        height: img.height
-      });
-    };
-    img.src = imageSrc;
-    setIsSatelliteGalleryOpen(false); // Close the gallery after selection
-  };
-
-  const handleDroneGallerySelect = (imageSrc) => {
-    setDroneImageSrc(imageSrc);
-    const img = new Image();
-    img.onload = () => {
-      setDroneImageDimensions({
-        width: img.width,
-        height: img.height
-      });
-    };
-    img.src = imageSrc;
-    setIsDroneGalleryOpen(false); // Close the gallery after selection
-  };
-
-  const createImage = (url) =>
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => resolve(img);
-      img.onerror = (error) => reject(error);
-      img.src = url;
-    });
-
-  const getCroppedImg = async (imageSrc, pixelCrop) => {
-    const image = await createImage(imageSrc);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
-    
-    // Draw the cropped area
-    ctx.drawImage(
-      image,
-      pixelCrop.x,
-      pixelCrop.y,
-      pixelCrop.width,
-      pixelCrop.height,
-      0,
-      0,
-      pixelCrop.width,
-      pixelCrop.height
-    );
-
-    // Capture the original cropped image
-    const originalDataUrl = canvas.toDataURL('image/png');
-
-    // Calculate average color
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let totalR = 0, totalG = 0, totalB = 0;
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      totalR += imageData.data[i];
-      totalG += imageData.data[i + 1];
-      totalB += imageData.data[i + 2];
-    }
-    const count = imageData.data.length / 4;
-    const avgR = Math.round(totalR / count);
-    const avgG = Math.round(totalG / count);
-    const avgB = Math.round(totalB / count);
-
-    // Apply average color
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      imageData.data[i] = avgR;
-      imageData.data[i + 1] = avgG;
-      imageData.data[i + 2] = avgB;
-    }
-    ctx.putImageData(imageData, 0, 0);
-
-    // Capture the averaged image
-    const averagedDataUrl = canvas.toDataURL('image/png');
-
-    return {
-      originalDataUrl,
-      averagedDataUrl,
-      avgR,
-      avgG,
-      avgB
-    };
-  };
-
+  // Cropping functions
   const showSatelliteCroppedImage = useCallback(async () => {
     if (!satelliteCroppedAreaPixels) return;
     
@@ -603,67 +700,10 @@ export default function Correction() {
     }
   }, [droneImageSrc, droneCroppedAreaPixels]);
   
-  const resetSatelliteEditor = () => {
-    setSatelliteCrop({ x: 0, y: 0 });
-    setSatelliteZoom(1);
-  };
-  
-  const resetDroneEditor = () => {
-    setDroneCrop({ x: 0, y: 0 });
-    setDroneZoom(1);
-  };
-  
-  const resetSatelliteAll = () => {
-    setError(null);
-    setSatelliteImageSrc(null);
-    setSatelliteCroppedImage(null);
-    setSatelliteOriginalCroppedImage(null);
-    setSatelliteAverageImage(null);
-    setSatelliteAvgRgb({ r: 0, g: 0, b: 0 });
-    setSatelliteCorrectedImage(null);
-    resetSatelliteEditor();
-  };
-  
-  const resetDroneAll = () => {
-    setError(null);
-    setDroneImageSrc(null);
-    setDroneCroppedImage(null);
-    setDroneOriginalCroppedImage(null);
-    setDroneAverageImage(null);
-    setDroneAvgRgb({ r: 0, g: 0, b: 0 });
-    resetDroneEditor();
-  };
-
-  // Calculate RGB differences between satellite and drone images
-  const calculateRgbDifference = () => {
-    if (!satelliteAvgRgb || !droneAvgRgb) return null;
-    
-    return {
-      r: Math.abs(satelliteAvgRgb.r - droneAvgRgb.r),
-      g: Math.abs(satelliteAvgRgb.g - droneAvgRgb.g),
-      b: Math.abs(satelliteAvgRgb.b - droneAvgRgb.b)
-    };
-  };
-
-  // Calculate the overall color difference (Euclidean distance in RGB space)
-  const calculateColorDifference = () => {
-    if (!satelliteAvgRgb || !droneAvgRgb) return null;
-    
-    const dr = satelliteAvgRgb.r - droneAvgRgb.r;
-    const dg = satelliteAvgRgb.g - droneAvgRgb.g;
-    const db = satelliteAvgRgb.b - droneAvgRgb.b;
-    
-    // Euclidean distance in RGB space
-    return Math.sqrt(dr*dr + dg*dg + db*db).toFixed(2);
-  };
-
-  // Calculate RGB differences between satellite and drone images as percentages
+  // Analysis functions
   const calculateRgbDifferencePercentage = () => {
     if (!satelliteAvgRgb || !droneAvgRgb) return null;
     
-    // Formula: ((satellite - drone) / drone) * 100%
-    // Negative values indicate satellite is lower than drone
-    // Positive values indicate satellite is higher than drone
     return {
       r: droneAvgRgb.r === 0 ? 0 : (((droneAvgRgb.r - satelliteAvgRgb.r) / droneAvgRgb.r) * 100).toFixed(1),
       g: droneAvgRgb.g === 0 ? 0 : (((droneAvgRgb.g - satelliteAvgRgb.g) / droneAvgRgb.g) * 100).toFixed(1),
@@ -671,11 +711,9 @@ export default function Correction() {
     };
   };
 
-  // Calculate the overall color difference as a percentage
   const calculateColorDifferencePercentage = () => {
     if (!satelliteAvgRgb || !droneAvgRgb) return null;
     
-    // Calculate the drone's color magnitude (to avoid division by zero)
     const droneMagnitude = Math.sqrt(
       droneAvgRgb.r * droneAvgRgb.r + 
       droneAvgRgb.g * droneAvgRgb.g + 
@@ -688,58 +726,39 @@ export default function Correction() {
     const dg = droneAvgRgb.g - satelliteAvgRgb.g;
     const db = droneAvgRgb.b - satelliteAvgRgb.b;
     
-    // Euclidean distance in RGB space
     const distance = Math.sqrt(dr*dr + dg*dg + db*db);
-    
-    // Calculate percentage relative to drone's color magnitude
     return ((distance / droneMagnitude) * 100).toFixed(1);
   };
 
+  // Apply correction
   const applyCorrection = useCallback(async () => {
     if (!satelliteImageSrc || !satelliteAvgRgb || !droneAvgRgb) return;
     
     setIsLoading(true);
     try {
-      // Create a new image from the satellite image
       const img = await createImage(satelliteImageSrc);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      // Set canvas dimensions to match the image
       canvas.width = img.width;
       canvas.height = img.height;
-      
-      // Draw the original image onto the canvas
       ctx.drawImage(img, 0, 0);
       
-      // Get the image data
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      
-      // Calculate percentage differences for correction
       const rgbDiff = calculateRgbDifferencePercentage();
       
-      // Apply correction to each pixel
       for (let i = 0; i < imageData.data.length; i += 4) {
-        // Apply correction based on the percentage difference
-        // For each channel: adjust pixel by the percentage difference relative to drone value
         const rAdjustment = (parseFloat(rgbDiff.r) / 100) * droneAvgRgb.r;
         const gAdjustment = (parseFloat(rgbDiff.g) / 100) * droneAvgRgb.g;
         const bAdjustment = (parseFloat(rgbDiff.b) / 100) * droneAvgRgb.b;
         
-        // If satellite < drone (negative %), increase value; if satellite > drone (positive %), decrease value
         imageData.data[i] = Math.min(255, Math.max(0, Math.round(imageData.data[i] - rAdjustment)));
         imageData.data[i + 1] = Math.min(255, Math.max(0, Math.round(imageData.data[i + 1] - gAdjustment)));
         imageData.data[i + 2] = Math.min(255, Math.max(0, Math.round(imageData.data[i + 2] - bAdjustment)));
-        // Alpha channel (i + 3) remains unchanged
       }
       
-      // Put the corrected image data back to the canvas
       ctx.putImageData(imageData, 0, 0);
-      
-      // Get the data URL of the corrected image
       const correctedDataUrl = canvas.toDataURL('image/png');
-      
-      // Set the corrected image
       setSatelliteCorrectedImage(correctedDataUrl);
     } catch (e) {
       setError('Image correction failed');
@@ -751,13 +770,13 @@ export default function Correction() {
 
   return (
     <motion.div 
-      className="backdrop-blur-lg bg-white/50 text-gray-800 p-6 md:p-8 overflow-y-auto rounded-3xl shadow-2xl w-full max-w-5xl mx-auto my-6 border border-gray-100"
+      className="backdrop-blur-sm bg-white/90 text-gray-800 p-5 md:p-8 overflow-y-auto rounded-md shadow-lg w-full max-w-5xl mx-auto my-5 border border-gray-200"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       <motion.h1 
-        className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 pb-2 border-b border-gray-200"
+        className="text-xl font-bold text-gray-800 mb-4"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
@@ -768,7 +787,7 @@ export default function Correction() {
       <AnimatePresence>
         {error && (
           <motion.div 
-            className="mt-4 mb-5 text-red-600 flex items-center bg-red-50 p-4 rounded-lg border-l-4 border-red-500 shadow-sm"
+            className="mt-5 mb-5 text-red-600 flex items-center bg-red-50 p-4 rounded-md border-l-4 border-red-500 shadow-sm"
             variants={errorVariants}
             initial="hidden"
             animate="visible"
@@ -790,198 +809,31 @@ export default function Correction() {
         initial="hidden"
         animate="visible"
       >
-        {/* Satellite Image Section */}
-        <motion.div 
-          className="border border-gray-200 p-5 rounded-xl shadow-md bg-white"
-          variants={itemVariants}
-        >
-          <div className="flex items-center mb-4 pb-2 border-b border-gray-200">
-            <motion.div
-              initial={{ rotate: -90 }}
-              animate={{ rotate: 0 }}
-              transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
-            >
-              <FaSatellite className="text-blue-600 mr-3 text-xl" />
-            </motion.div>
-            <h2 className="text-xl font-bold text-gray-800">Satellite Image</h2>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {!satelliteImageSrc && !isLoading && (
-              <motion.div 
-                className="mb-6"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
-              >
-                <motion.div 
-                  className="p-8 md:p-10 border-dashed border-2 border-blue-300 rounded-xl text-center bg-gradient-to-b from-white/80 to-blue-50/60 shadow-md hover:shadow-lg hover:border-blue-400 transition-all duration-300 group flex-1"
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                >
-                  <motion.div
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                  >
-                    <FaImage className="mx-auto text-4xl md:text-5xl text-blue-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
-                  </motion.div>
-                  <motion.p 
-                    className="mb-5 text-gray-700 font-medium"
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                  >
-                    Select an Image
-                  </motion.p>
-                  
-                  {/* Upload Button */}
-                  <motion.label
-                    htmlFor="satelliteFileInput"
-                    className="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0 mb-3"
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Upload from Device
-                    <input
-                      type="file"
-                      onChange={handleSatelliteFileChange}
-                      accept={ACCEPTED_FILE_TYPES.join(',')}
-                      className="hidden"
-                      id="satelliteFileInput"
-                    />
-                  </motion.label>
-
-                  {/* Gallery Button */}
-                  <motion.button
-                    onClick={() => setIsSatelliteGalleryOpen(true)}
-                    className="cursor-pointer inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Select from Gallery
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Satellite Gallery Popup */}
-          <SatelliteGalleryPopup
-            isOpen={isSatelliteGalleryOpen}
-            onClose={() => setIsSatelliteGalleryOpen(false)}
-            onImageSelect={handleSatelliteGallerySelect}
-            images={dummySatelliteImages}
+        {/* Satellite Image Editor */}
+        <motion.div variants={itemVariants}>
+          <ImageEditor
+            type="satellite"
+            imageSrc={satelliteImageSrc}
+            setImageSrc={setSatelliteImageSrc}
+            crop={satelliteCrop}
+            setCrop={setSatelliteCrop}
+            zoom={satelliteZoom}
+            setZoom={setSatelliteZoom}
+            handleCropComplete={onSatelliteCropComplete}
+            resetEditor={resetSatelliteEditor}
+            resetAll={resetSatelliteAll}
+            showCroppedImage={showSatelliteCroppedImage}
+            imageDimensions={satelliteImageDimensions}
+            isGalleryOpen={isSatelliteGalleryOpen}
+            setIsGalleryOpen={setIsSatelliteGalleryOpen}
+            galleryImages={dummySatelliteImages}
+            color="blue"
           />
-
-          <AnimatePresence>
-            {satelliteImageSrc && !isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <motion.div 
-                  className="relative w-full h-[20rem] border rounded-xl overflow-hidden mb-4 bg-gray-100 shadow-inner"
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <Cropper
-                    image={satelliteImageSrc}
-                    crop={satelliteCrop}
-                    zoom={satelliteZoom}
-                    maxZoom={20}
-                    aspect={1}
-                    onCropChange={setSatelliteCrop}
-                    onZoomChange={setSatelliteZoom}
-                    onCropComplete={onSatelliteCropComplete}
-                  />
-                </motion.div>
-                
-                {satelliteImageDimensions.width > 0 && (
-                  <motion.div 
-                    className="mb-3 text-sm text-gray-600 bg-gray-50 inline-block px-3 py-1 rounded-md"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    Original: {satelliteImageDimensions.width} × {satelliteImageDimensions.height}px
-                  </motion.div>
-                )}
-                
-                <div className="flex flex-wrap items-center gap-2 mb-4 mt-2">
-                  <div className="flex space-x-2 mr-auto">
-                    <motion.button
-                      onClick={() => setSatelliteZoom(Math.min(20, satelliteZoom + 0.2))}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
-                      title="Zoom in"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Zoom In
-                    </motion.button>
-                    <motion.button
-                      onClick={() => setSatelliteZoom(Math.max(1, satelliteZoom - 0.2))}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
-                      title="Zoom out"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Zoom Out
-                    </motion.button>
-                    <motion.button
-                      onClick={resetSatelliteEditor}
-                      className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
-                      title="Reset changes"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <FaUndo className="inline mr-1 -mt-0.5" /> Reset
-                    </motion.button>
-                  </div>
-                  <div className="flex space-x-2">
-                    <motion.button
-                      onClick={showSatelliteCroppedImage}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ 
-                        scale: 1.05,
-                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" 
-                      }}
-                    >
-                      Crop Image
-                    </motion.button>
-                    <motion.button
-                      onClick={resetSatelliteAll}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ 
-                        scale: 1.05,
-                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" 
-                      }}
-                    >
-                      <FaTrash className="inline mr-1 -mt-0.5" /> Cancel
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <AnimatePresence>
             {satelliteOriginalCroppedImage && !isLoading && (
               <motion.div 
-                className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100"
+                className="mt-5 bg-white p-5 rounded-md shadow-sm border border-gray-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -991,7 +843,7 @@ export default function Correction() {
                 <motion.img
                   src={satelliteOriginalCroppedImage}
                   alt="Satellite Cropped"
-                  className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+                  className="border border-gray-200 rounded-md mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.4 }}
@@ -1003,7 +855,7 @@ export default function Correction() {
           <AnimatePresence>
             {satelliteAverageImage && !isLoading && (
               <motion.div 
-                className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100"
+                className="mt-5 bg-white p-5 rounded-md shadow-sm border border-gray-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -1013,7 +865,7 @@ export default function Correction() {
                 <motion.img
                   src={satelliteAverageImage}
                   alt="Satellite Averaged"
-                  className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration=300"
+                  className="border border-gray-200 rounded-md mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.4 }}
@@ -1031,198 +883,31 @@ export default function Correction() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Drone Image Section - Similar changes as satellite section */}
-        <motion.div 
-          className="border border-gray-200 p-5 rounded-xl shadow-md bg-white"
-          variants={itemVariants}
-        >
-          <div className="flex items-center mb-4 pb-2 border-b border-gray-200">
-            <motion.div
-              initial={{ rotate: 90 }}
-              animate={{ rotate: 0 }}
-              transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
-            >
-              <FaPlane className="text-green-600 mr-3 text-xl" />
-            </motion.div>
-            <h2 className="text-xl font-bold text-gray-800">Drone Image</h2>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {!droneImageSrc && !isLoading && (
-              <motion.div 
-                className="mb-6"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
-              >
-                <motion.div 
-                  className="p-8 md:p-10 border-dashed border-2 border-green-300 rounded-xl text-center bg-gradient-to-b from-white/80 to-green-50/60 shadow-md hover:shadow-lg hover:border-green-400 transition-all duration-300 group flex-1"
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                >
-                  <motion.div
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                  >
-                    <FaImage className="mx-auto text-4xl md:text-5xl text-green-500 mb-4 group-hover:scale-110 transition-transform duration-300" />
-                  </motion.div>
-                  <motion.p 
-                    className="mb-5 text-gray-700 font-medium"
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                  >
-                    Select an Image
-                  </motion.p>
-                  
-                  {/* Upload Button */}
-                  <motion.label
-                    htmlFor="droneFileInput"
-                    className="cursor-pointer inline-block bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0 mb-3"
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Upload from Device
-                    <input
-                      type="file"
-                      onChange={handleDroneFileChange}
-                      accept={ACCEPTED_FILE_TYPES.join(',')}
-                      className="hidden"
-                      id="droneFileInput"
-                    />
-                  </motion.label>
-
-                  {/* Gallery Button */}
-                  <motion.button
-                    onClick={() => setIsDroneGalleryOpen(true)}
-                    className="cursor-pointer inline-block bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded-full transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:translate-y-0"
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Select from Gallery
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Drone Gallery Popup */}
-          <DroneGalleryPopup
-            isOpen={isDroneGalleryOpen}
-            onClose={() => setIsDroneGalleryOpen(false)}
-            onImageSelect={handleDroneGallerySelect}
-            images={dummyDroneImages}
+        {/* Drone Image Editor */}
+        <motion.div variants={itemVariants}>
+          <ImageEditor
+            type="drone"
+            imageSrc={droneImageSrc}
+            setImageSrc={setDroneImageSrc}
+            crop={droneCrop}
+            setCrop={setDroneCrop}
+            zoom={droneZoom}
+            setZoom={setDroneZoom}
+            handleCropComplete={onDroneCropComplete}
+            resetEditor={resetDroneEditor}
+            resetAll={resetDroneAll}
+            showCroppedImage={showDroneCroppedImage}
+            imageDimensions={droneImageDimensions}
+            isGalleryOpen={isDroneGalleryOpen}
+            setIsGalleryOpen={setIsDroneGalleryOpen}
+            galleryImages={dummyDroneImages}
+            color="green"
           />
-
-          <AnimatePresence>
-            {droneImageSrc && !isLoading && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <motion.div 
-                  className="relative w-full h-[20rem] border rounded-xl overflow-hidden mb-4 bg-gray-100 shadow-inner"
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <Cropper
-                    image={droneImageSrc}
-                    crop={droneCrop}
-                    zoom={droneZoom}
-                    maxZoom={20}
-                    aspect={1}
-                    onCropChange={setDroneCrop}
-                    onZoomChange={setDroneZoom}
-                    onCropComplete={onDroneCropComplete}
-                  />
-                </motion.div>
-                
-                {droneImageDimensions.width > 0 && (
-                  <motion.div 
-                    className="mb-3 text-sm text-gray-600 bg-gray-50 inline-block px-3 py-1 rounded-md"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    Original: {droneImageDimensions.width} × {droneImageDimensions.height}px
-                  </motion.div>
-                )}
-                
-                <div className="flex flex-wrap items-center gap-2 mb-4 mt-2">
-                  <div className="flex space-x-2 mr-auto">
-                    <motion.button
-                      onClick={() => setDroneZoom(Math.min(20, droneZoom + 0.2))}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
-                      title="Zoom in"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Zoom In
-                    </motion.button>
-                    <motion.button
-                      onClick={() => setDroneZoom(Math.max(1, droneZoom - 0.2))}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
-                      title="Zoom out"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      Zoom Out
-                    </motion.button>
-                    <motion.button
-                      onClick={resetDroneEditor}
-                      className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-lg transition-all duration-200 shadow-sm text-sm"
-                      title="Reset changes"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <FaUndo className="inline mr-1 -mt-0.5" /> Reset
-                    </motion.button>
-                  </div>
-                  <div className="flex space-x-2">
-                    <motion.button
-                      onClick={showDroneCroppedImage}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ 
-                        scale: 1.05,
-                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" 
-                      }}
-                    >
-                      Crop Image
-                    </motion.button>
-                    <motion.button
-                      onClick={resetDroneAll}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition-all duration-200 shadow-sm font-medium"
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ 
-                        scale: 1.05,
-                        boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.1)" 
-                      }}
-                    >
-                      <FaTrash className="inline mr-1 -mt-0.5" /> Cancel
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <AnimatePresence>
             {droneOriginalCroppedImage && !isLoading && (
               <motion.div 
-                className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100"
+                className="mt-5 bg-white p-5 rounded-md shadow-sm border border-gray-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -1232,7 +917,7 @@ export default function Correction() {
                 <motion.img
                   src={droneOriginalCroppedImage}
                   alt="Drone Cropped"
-                  className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+                  className="border border-gray-200 rounded-md mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.4 }}
@@ -1244,7 +929,7 @@ export default function Correction() {
           <AnimatePresence>
             {droneAverageImage && !isLoading && (
               <motion.div 
-                className="mb-4 bg-white p-4 rounded-xl shadow border border-gray-100"
+                className="mt-5 bg-white p-5 rounded-md shadow-sm border border-gray-200"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
@@ -1254,7 +939,7 @@ export default function Correction() {
                 <motion.img
                   src={droneAverageImage}
                   alt="Drone Averaged"
-                  className="border border-gray-200 rounded-lg mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
+                  className="border border-gray-200 rounded-md mb-3 max-w-full object-contain hover:shadow-md transition-shadow duration-300"
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.4 }}
@@ -1273,22 +958,25 @@ export default function Correction() {
         </motion.div>
       </motion.div>
 
+      {/* Color Comparison Section */}
       <AnimatePresence>
         {(satelliteAverageImage && droneAverageImage) && (
           <motion.div 
-            className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100"
+            className="mt-5 bg-white p-5 rounded-md shadow-sm border border-gray-200"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="font-semibold text-xl text-gray-800 mb-4 pb-2 border-b border-gray-100">Color Comparison</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Color Comparison</h2>
             <motion.div 
               className="grid grid-cols-1 md:grid-cols-3 gap-6"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
+              {/* Comparison details rendered here */}
+              {/* Satellite color box */}
               <motion.div variants={itemVariants}>
                 <h3 className="font-medium text-gray-700 mb-2">Satellite Image</h3>
                 <div className="flex items-center space-x-3">
@@ -1310,6 +998,7 @@ export default function Correction() {
                 </div>
               </motion.div>
               
+              {/* Drone color box */}
               <motion.div variants={itemVariants}>
                 <h3 className="font-medium text-gray-700 mb-2">Drone Image</h3>
                 <div className="flex items-center space-x-3">
@@ -1331,6 +1020,7 @@ export default function Correction() {
                 </div>
               </motion.div>
               
+              {/* Difference analysis */}
               <motion.div variants={itemVariants}>
                 <h3 className="font-medium text-gray-700 mb-2">RGB Difference</h3>
                 {calculateRgbDifferencePercentage() && (
@@ -1389,15 +1079,43 @@ export default function Correction() {
                 )}
               </motion.div>
             </motion.div>
+
+            {/* Add this new information section about RGB values in remote sensing */}
             <motion.div 
-              className="mt-6 flex justify-center"
+              className="mt-5 p-5 bg-indigo-50 rounded-md border border-indigo-100"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <h3 className="text-indigo-800 font-medium text-lg mb-2">Understanding RGB Values in Remote Sensing</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-indigo-700">
+                <div className="bg-white/70 p-3 rounded-md">
+                  <h4 className="font-medium text-indigo-900 mb-1">Red Channel (R)</h4>
+                  <p>Indicates absorption by chlorophyll and is sensitive to vegetation health. Lower values often suggest healthier vegetation. Red is also responsive to soil types, certain minerals, and built surfaces.</p>
+                </div>
+                <div className="bg-white/70 p-3 rounded-md">
+                  <h4 className="font-medium text-indigo-900 mb-1">Green Channel (G)</h4>
+                  <p>Reflects green light from vegetation and captures chlorophyll content. Higher values often correlate with greener, more vigorous vegetation. Green is also useful for distinguishing between vegetation types.</p>
+                </div>
+                <div className="bg-white/70 p-3 rounded-md">
+                  <h4 className="font-medium text-indigo-900 mb-1">Blue Channel (B)</h4>
+                  <p>Provides information about atmospheric conditions and water features. Blue is often absorbed by healthy vegetation. It helps with distinguishing water bodies, shadows, and certain urban features.</p>
+                </div>
+              </div>
+              <div className="mt-3 text-sm text-indigo-700">
+                <p>The color differences between satellite and drone imagery affect vegetation indices and analysis accuracy. Correcting these differences improves consistency in environmental monitoring and agricultural assessments.</p>
+              </div>
+            </motion.div>
+            
+            <motion.div 
+              className="mt-5 flex justify-center"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
               <motion.button
                 onClick={applyCorrection}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-md font-medium flex items-center"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md transition-all duration-200 shadow-md font-medium flex items-center"
                 disabled={isLoading}
                 whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.15)" }}
                 whileTap={{ scale: 0.95 }}
@@ -1409,16 +1127,17 @@ export default function Correction() {
         )}
       </AnimatePresence>
 
+      {/* Before & After Comparison */}
       <AnimatePresence>
         {satelliteCorrectedImage && (
           <motion.div 
-            className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100"
+            className="mt-5 bg-white p-5 rounded-md shadow-sm border border-gray-200"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="font-semibold text-xl text-gray-800 mb-4 pb-2 border-b border-gray-100">Before & After Comparison</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Before & After Comparison</h2>
             <motion.div 
               className="grid grid-cols-1 md:grid-cols-2 gap-6"
               variants={containerVariants}
@@ -1428,7 +1147,7 @@ export default function Correction() {
               <motion.div variants={itemVariants}>
                 <h3 className="font-medium text-gray-700 mb-3">Original Satellite Image</h3>
                 <motion.div 
-                  className="relative border border-gray-200 rounded-lg overflow-hidden shadow-md"
+                  className="relative border border-gray-200 rounded-md overflow-hidden shadow-md"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
@@ -1442,7 +1161,7 @@ export default function Correction() {
               <motion.div variants={itemVariants}>
                 <h3 className="font-medium text-gray-700 mb-3">Corrected Satellite Image</h3>
                 <motion.div 
-                  className="relative border border-gray-200 rounded-lg overflow-hidden shadow-md"
+                  className="relative border border-gray-200 rounded-md overflow-hidden shadow-md"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
@@ -1454,14 +1173,40 @@ export default function Correction() {
                 </motion.div>
               </motion.div>
             </motion.div>
+            
+            {/* Enhanced information section about color correction impacts */}
             <motion.div 
-              className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700"
+              className="mt-5 p-5 bg-gray-50 rounded-md border border-gray-200"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <p>The corrected image adjusts RGB values to match the drone image's color characteristics. Adjustment percentages are shown in the color comparison section above.</p>
+              <h3 className="text-gray-800 font-medium text-lg mb-2">Impact of Color Correction on Analysis</h3>
+              <div className="text-sm text-gray-700 mb-2">
+                <p>The corrected image adjusts RGB values to match the drone image's color characteristics. This correction can significantly impact the calculation of vegetation and surface indices:</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                <div className="bg-white/70 p-3 rounded-md text-sm text-gray-700">
+                  <h4 className="font-medium text-gray-900 mb-1">Vegetation Indices</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li><span className="font-medium">VARI, ExG, NGRDI:</span> More accurate vegetation detection</li>
+                    <li><span className="font-medium">TGI:</span> Improved chlorophyll content estimation</li>
+                    <li><span className="font-medium">GLI:</span> Enhanced green leaf density mapping</li>
+                    <li><span className="font-medium">CIVE:</span> Better vegetation extraction in complex scenes</li>
+                  </ul>
+                </div>
+                <div className="bg-white/70 p-3 rounded-md text-sm text-gray-700">
+                  <h4 className="font-medium text-gray-900 mb-1">Surface & Color Indices</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li><span className="font-medium">Soil Color Index:</span> More consistent soil detection</li>
+                    <li><span className="font-medium">Urban Indices:</span> Improved built surface identification</li>
+                    <li><span className="font-medium">RGB Ratios:</span> More accurate material classification</li>
+                    <li><span className="font-medium">Color Metrics:</span> Enhanced scene interpretation</li>
+                  </ul>
+                </div>
+              </div>
             </motion.div>
+            
             <motion.div 
               className="flex justify-end mt-3"
               initial={{ opacity: 0, y: 10 }}
@@ -1471,7 +1216,7 @@ export default function Correction() {
               <motion.a
                 href={satelliteCorrectedImage}
                 download="corrected_satellite_image.png"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 shadow-sm font-medium flex items-center"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-all duration-200 shadow-sm font-medium flex items-center"
                 whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.15)" }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -1481,11 +1226,74 @@ export default function Correction() {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Add a new explanation section about RGB indices */}
+      <AnimatePresence>
+        {(satelliteAverageImage && droneAverageImage) && (
+          <motion.div 
+            className="mt-5 bg-white p-5 rounded-md shadow-sm border border-gray-200"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              Why RGB Values Matter in Remote Sensing
+            </h2>
+            <div className="text-gray-700">
+              <p className="mb-4">
+                RGB values from satellite and drone imagery provide crucial data for environmental monitoring, agriculture, and land use analysis. 
+                Accurate color representation is essential for deriving meaningful vegetation and surface indices.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
+                  <h3 className="font-medium text-gray-800 mb-2">RGB-based Vegetation Indices</h3>
+                  <p className="text-sm mb-3">
+                    RGB imagery can be used to calculate various vegetation indices that assess plant health, density, and stress levels without requiring specialized multispectral sensors.
+                  </p>
+                  <ul className="text-sm list-disc list-inside space-y-1">
+                    <li><span className="font-medium">ExG (Excess Green):</span> Highlights green vegetation</li>
+                    <li><span className="font-medium">VARI:</span> Reduces atmospheric effects</li>
+                    <li><span className="font-medium">TGI:</span> Correlates with chlorophyll content</li>
+                    <li><span className="font-medium">GLI:</span> Assesses green leaf density</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
+                  <h3 className="font-medium text-gray-800 mb-2">Impacts of Color Correction</h3>
+                  <p className="text-sm mb-3">
+                    Color differences between image sources can lead to inconsistent analysis. Proper correction:
+                  </p>
+                  <ul className="text-sm list-disc list-inside space-y-1">
+                    <li>Improves data consistency across platforms</li>
+                    <li>Enhances accuracy of vegetation monitoring</li>
+                    <li>Allows for more reliable time-series analysis</li>
+                    <li>Reduces errors in environmental assessments</li>
+                    <li>Enables better integration of multiple data sources</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-yellow-50 p-4 rounded-md border border-yellow-100 text-sm text-yellow-800">
+                <h3 className="font-medium mb-2">Important Considerations</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>RGB corrections cannot compensate for all spectral differences between sensors</li>
+                  <li>Environmental conditions (time of day, season, atmospheric conditions) affect RGB values</li>
+                  <li>For the most accurate analysis, use consistent imaging conditions when possible</li>
+                  <li>Advanced studies may still require specialized multispectral or hyperspectral sensors</li>
+                </ul>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
+      {/* Advanced Analysis Button */}
       <AnimatePresence>
         {(satelliteAverageImage && droneAverageImage) && !showAnalysis && (
           <motion.div 
-            className="mt-6 flex justify-center"
+            className="mt-5 flex justify-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
@@ -1493,7 +1301,7 @@ export default function Correction() {
           >
             <motion.button
               onClick={() => setShowAnalysis(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-md font-medium flex items-center"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md transition-all duration-200 shadow-md font-medium flex items-center"
               whileHover={{ scale: 1.05, boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.15)" }}
               whileTap={{ scale: 0.95 }}
             >
@@ -1503,6 +1311,7 @@ export default function Correction() {
         )}
       </AnimatePresence>
 
+      {/* Analysis Component */}
       <AnimatePresence>
         {showAnalysis && (
           <motion.div
